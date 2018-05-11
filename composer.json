@@ -1,0 +1,22 @@
+{
+    "name": "kuria/collections",
+    "description": "Object-oriented collection structures",
+    "keywords": ["collection", "list", "map", "object"],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1"
+    },
+    "require-dev": {
+        "kuria/dev-meta": "^0.3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kuria\\Collections\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kuria\\Collections\\": "tests"
+        }
+    }
+}
