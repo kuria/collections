@@ -9,7 +9,7 @@ class IterableHelperTest extends TestCase
     /**
      * @dataProvider provideIterables
      */
-    function testConvertIterableToList(iterable $iterable, array $expectedArray)
+    function testShouldConvertIterableToList(iterable $iterable, array $expectedArray)
     {
         $this->assertSame(array_values($expectedArray), IterableHelper::iterableToList($iterable));
     }
@@ -17,12 +17,12 @@ class IterableHelperTest extends TestCase
     /**
      * @dataProvider provideIterables
      */
-    function testConvertIterableToArray(iterable $iterable, array $expectedArray)
+    function testShouldConvertIterableToArray(iterable $iterable, array $expectedArray)
     {
         $this->assertSame($expectedArray, IterableHelper::iterableToArray($iterable));
     }
 
-    function testConvertIterablesToArrays()
+    function testShouldConvertIterablesToArrays()
     {
         $iterablesAndExpectedArrays = $this->provideIterables();
 

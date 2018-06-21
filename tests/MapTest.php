@@ -9,7 +9,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider provideConstructorPairs
      */
-    function testConstructor(?iterable $pairs, array $expectedArrayData)
+    function testShouldCreateMap(?iterable $pairs, array $expectedArrayData)
     {
         $this->assertSame($expectedArrayData, (new Map($pairs))->toArray());
     }
@@ -31,7 +31,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider provideKeysAndValuesToCombine
      */
-    function testCombine($keys, $values, array $expectedPairs)
+    function testShouldCombine($keys, $values, array $expectedPairs)
     {
         $this->assertMap($expectedPairs, Map::combine($keys, $values));
     }
@@ -63,18 +63,18 @@ class MapTest extends TestCase
         ];
     }
 
-    function testToArray()
+    function testShouldConvertToArray()
     {
         $this->assertSame($this->getExamplePairs(), $this->getExampleMap()->toArray());
     }
 
-    function testIsEmpty()
+    function testShouldCheckIfMapIsEmpty()
     {
         $this->assertTrue((new Map())->isEmpty());
         $this->assertFalse($this->getExampleMap()->isEmpty());
     }
 
-    function testHas()
+    function testShouldCheckIfKeyExists()
     {
         $map = $this->getExampleMap();
 
@@ -91,7 +91,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider provideKeysToAccess
      */
-    function testHasAndGet(array $pairs, $key, bool $exists, $expectedValue = null)
+    function testShouldCheckKeyAndGetValue(array $pairs, $key, bool $exists, $expectedValue = null)
     {
         $map = new Map($pairs);
 
@@ -120,7 +120,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider provideKeysAndValues
      */
-    function testContainsAndFind(array $pairs, $value, bool $strict, $expectedKey)
+    function testShouldCheckAndFindValue(array $pairs, $value, bool $strict, $expectedKey)
     {
         $map = new Map($pairs);
 
@@ -165,7 +165,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairs
      */
-    function testValuesAndKeys(array $pairs)
+    function testShouldGetValuesAndKeys(array $pairs)
     {
         $map = new Map($pairs);
 
@@ -182,7 +182,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testSet()
+    function testShouldSet()
     {
         $map = new Map();
 
@@ -193,7 +193,7 @@ class MapTest extends TestCase
         $this->assertMap(['foo' => 'bar', 'null' => null, 123 => '456'], $map);
     }
 
-    function testAdd()
+    function testShouldAdd()
     {
         $map = $this->getExampleMap();
 
@@ -212,7 +212,7 @@ class MapTest extends TestCase
         );
     }
 
-    function testFill()
+    function testShouldFill()
     {
         $map = new Map();
 
@@ -229,7 +229,7 @@ class MapTest extends TestCase
         );
     }
 
-    function testRemove()
+    function testShouldRemove()
     {
         $map = $this->getExampleMap();
 
@@ -259,7 +259,7 @@ class MapTest extends TestCase
         $this->assertMap([], $map);
     }
 
-    function testClear()
+    function testShouldClear()
     {
         $map = $this->getExampleMap();
         $map->clear();
@@ -270,7 +270,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToReduce
      */
-    function testReduce(array $pairs, callable $reducer, $initial, $expectedResult)
+    function testShouldReduce(array $pairs, callable $reducer, $initial, $expectedResult)
     {
         $this->assertSame($expectedResult, (new Map($pairs))->reduce($reducer, $initial));
     }
@@ -296,7 +296,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testFlip()
+    function testShouldFlip()
     {
         $map = $this->getExampleMap();
 
@@ -314,7 +314,7 @@ class MapTest extends TestCase
         $this->assertNotSame($map, $flipped); // should return new instance
     }
 
-    function testShuffle()
+    function testShouldShuffle()
     {
         $map = $this->getExampleMap();
 
@@ -330,7 +330,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToColumn
      */
-    function testColumn(array $pairs, $key, $indexKey, array $expectedColumn)
+    function testShouldGetColumn(array $pairs, $key, $indexKey, array $expectedColumn)
     {
         $map = new Map($pairs);
         $column = $map->column($key, $indexKey);
@@ -391,7 +391,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testFilter()
+    function testShouldFilter()
     {
         $map = $this->getExampleMap();
 
@@ -405,7 +405,7 @@ class MapTest extends TestCase
         $this->assertNotSame($map, $filtered); // should return new instance
     }
 
-    function testMap()
+    function testShouldMap()
     {
         $map = $this->getExampleMap();
 
@@ -420,7 +420,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToIntersect
      */
-    function testIntersect(array $pairs, array $iterables, array $expectedIntersection)
+    function testShouldIntersect(array $pairs, array $iterables, array $expectedIntersection)
     {
         $map = new Map($pairs);
 
@@ -457,7 +457,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testUintersect()
+    function testShouldIntersectUsingCustomComparator()
     {
         $map = new Map([
             'a' => ['id' => 1, 'value' => 'one'],
@@ -492,7 +492,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToDiff
      */
-    function testDiff(array $pairs, array $iterables, array $expectedDiff)
+    function testShouldDiff(array $pairs, array $iterables, array $expectedDiff)
     {
         $map = new Map($pairs);
 
@@ -529,7 +529,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testUdiff()
+    function testShouldDiffUsingCustomComparator()
     {
         $map = new Map([
             'a' => ['id' => 1, 'value' => 'one'],
@@ -564,7 +564,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToSort
      */
-    function testSort(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
+    function testShouldSort(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
     {
         $map = new Map($unsortedPairs);
 
@@ -617,7 +617,7 @@ class MapTest extends TestCase
         ];
     }
 
-    function testUsort()
+    function testShouldSortUsingCustomComparator()
     {
         $map = new Map([1, 2, 3, 4]);
 
@@ -631,7 +631,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider providePairsToKsort
      */
-    function testKsort(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
+    function testShouldSortUsingKeys(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
     {
         $map = new Map($unsortedPairs);
 
@@ -654,7 +654,7 @@ class MapTest extends TestCase
         }
     }
 
-    function testUksort()
+    function testShouldSortUsingKeysAndCustomComparator()
     {
         $map = new Map(['a' => 1, 'b' => 2, 'c' => 3]);
 
@@ -665,7 +665,7 @@ class MapTest extends TestCase
         $this->assertMap(['c' => 3, 'b' => 2, 'a' => 1], $map->uksort($comparator));
     }
 
-    function testCount()
+    function testShouldCount()
     {
         $this->assertSame(0, (new Map())->count());
         $this->assertSame(3, $this->getExampleMap()->count());
@@ -674,7 +674,7 @@ class MapTest extends TestCase
     /**
      * @dataProvider provideKeysToAccess
      */
-    function testArrayReadAccess(array $pairs, $key, bool $exists, $expectedValue = null)
+    function testShouldReadAsArray(array $pairs, $key, bool $exists, $expectedValue = null)
     {
         $map = new Map($pairs);
 
@@ -682,7 +682,7 @@ class MapTest extends TestCase
         $this->assertSame($expectedValue, $map[$key]);
     }
 
-    function testArrayWriteAccess()
+    function testShouldWriteAsArray()
     {
         $map = $this->getExampleMap();
 
@@ -699,7 +699,7 @@ class MapTest extends TestCase
         $this->assertMap([123 => 789], $map);
     }
 
-    function testGetIterator()
+    function testShouldGetIterator()
     {
         $this->assertSame(
             $this->getExamplePairs(),
@@ -707,7 +707,7 @@ class MapTest extends TestCase
         );
     }
 
-    function testBlankVarargsShortCircuit()
+    function testBlankVarargsShouldShortCircuit()
     {
         $map = $this->getExampleMap();
         $pairs = $map->toArray();
@@ -730,7 +730,7 @@ class MapTest extends TestCase
         $this->assertMap([], $map->udiff($callback));
     }
 
-    function testEmptyMapShortCircuit()
+    function testEmptyMapShouldShortCircuit()
     {
         $map = new Map();
 

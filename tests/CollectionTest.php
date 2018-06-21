@@ -9,7 +9,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideConstructorValues
      */
-    function testConstructor(?iterable $values, array $expectedValues)
+    function testShouldCreateCollection(?iterable $values, array $expectedValues)
     {
         $this->assertCollection($expectedValues, new Collection($values));
     }
@@ -37,7 +37,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideFillValues
      */
-    function testFill($value, int $count, array $expectedValues)
+    function testShouldFill($value, int $count, array $expectedValues)
     {
         $c = Collection::fill($value, $count);
 
@@ -58,7 +58,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideExplodeValues
      */
-    function testExplode(array $expectedValues, ...$args)
+    function testShouldExplode(array $expectedValues, ...$args)
     {
         $this->assertCollection($expectedValues, Collection::explode(...$args));
     }
@@ -79,7 +79,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testIsEmpty()
+    function testShouldCheckIfCollectionIsEmpty()
     {
         $this->assertTrue((new Collection())->isEmpty());
         $this->assertFalse($this->getExampleCollection()->isEmpty());
@@ -88,7 +88,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideIndexesToAccess
      */
-    function testHasAndGet(array $values, int $index, bool $exists, $expectedValue = null)
+    function testShouldCheckExistenceAndGetValue(array $values, int $index, bool $exists, $expectedValue = null)
     {
         $c = new Collection($values);
 
@@ -117,7 +117,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesAndIndexes
      */
-    function testContainsAndFind(array $values, $value, bool $strict, ?int $expectedIndex)
+    function testShouldCheckIfValueExistsAndFindIt(array $values, $value, bool $strict, ?int $expectedIndex)
     {
         $c = new Collection($values);
 
@@ -170,7 +170,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideFirstAndLastValues
      */
-    function testFirstAndLast(array $values, $expectedFirst, $expectedLast)
+    function testShouldGetFirstAndLast(array $values, $expectedFirst, $expectedLast)
     {
         $c = new Collection($values);
 
@@ -192,7 +192,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValues
      */
-    function testToArrayAndIndexes(array $values)
+    function testShouldConvertToArrayAndGetIndexes(array $values)
     {
         $c = new Collection($values);
 
@@ -212,7 +212,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideSliceOffsets
      */
-    function testSlice(int $index, ?int $length, array $expectedValues)
+    function testShouldSlice(int $index, ?int $length, array $expectedValues)
     {
         $c = $this->getExampleCollection();
         $slice = $c->slice($index, $length);
@@ -264,7 +264,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testReplace()
+    function testShouldReplace()
     {
         $c = $this->getExampleCollection();
 
@@ -295,7 +295,7 @@ class CollectionTest extends TestCase
         $c->replace(10, 'value');
     }
 
-    function testPushAndPop()
+    function testShouldPushAndPop()
     {
         $c = new Collection();
 
@@ -335,7 +335,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([], $c);
     }
 
-    function testInsert()
+    function testShouldInsert()
     {
         $c = new Collection();
 
@@ -361,7 +361,7 @@ class CollectionTest extends TestCase
         $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'bablbam', 'gudbaj', 'boop', 'mlem'], $c);
     }
 
-    function testRemove()
+    function testShouldRemove()
     {
         $c = $this->getExampleCollection();
 
@@ -381,7 +381,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([], $c);
     }
 
-    function testRemoveMultiple()
+    function testShouldRemoveMultiple()
     {
         $c = $this->getExampleCollection();
         $c->push('qux');
@@ -402,7 +402,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([], $c);
     }
 
-    function testClear()
+    function testShouldClear()
     {
         $c = $this->getExampleCollection();
         $c->clear();
@@ -410,7 +410,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([], $c);
     }
 
-    function testSplice()
+    function testShouldSplice()
     {
         $c = $this->getExampleCollection();
 
@@ -436,7 +436,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToSum
      */
-    function testSum(array $values, $expectedResult)
+    function testShouldSum(array $values, $expectedResult)
     {
         $this->assertSame($expectedResult, (new Collection($values))->sum());
     }
@@ -456,7 +456,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToProduct
      */
-    function testProduct(array $values, $expectedResult)
+    function testShouldProduct(array $values, $expectedResult)
     {
         $this->assertSame($expectedResult, (new Collection($values))->product());
     }
@@ -476,7 +476,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToImplode
      */
-    function testImplode(array $values, string $delimiter, string $expectedResult)
+    function testShouldImplode(array $values, string $delimiter, string $expectedResult)
     {
         $this->assertSame($expectedResult, (new Collection($values))->implode($delimiter));
     }
@@ -494,7 +494,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToReduce
      */
-    function testReduce(array $values, callable $reducer, $initial, $expectedResult)
+    function testShouldReduce(array $values, callable $reducer, $initial, $expectedResult)
     {
         $this->assertSame($expectedResult, (new Collection($values))->reduce($reducer, $initial));
     }
@@ -513,7 +513,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testReverse()
+    function testShouldReverse()
     {
         $c = $this->getExampleCollection();
         $reversed = $c->reverse();
@@ -525,7 +525,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToChunk
      */
-    function testChunk(array $values, int $size, array $expectedChunks)
+    function testShouldChunk(array $values, int $size, array $expectedChunks)
     {
         $c = new Collection($values);
 
@@ -554,7 +554,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToSplit
      */
-    function testSplit(array $values, int $number, array $expectedParts)
+    function testShouldSplit(array $values, int $number, array $expectedParts)
     {
         $c = new Collection($values);
 
@@ -585,7 +585,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideNonUniqueValues
      */
-    function testUnique(array $values, array $expectedUniqueValues)
+    function testShouldGetUniqueValues(array $values, array $expectedUniqueValues)
     {
         $c = new Collection($values);
 
@@ -613,7 +613,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testShuffle()
+    function testShouldShuffle()
     {
         $c = $this->getExampleCollection();
 
@@ -628,7 +628,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideRandomCounts
      */
-    function testRandom(int $count, int $expectedResultSize)
+    function testShouldGetRandomValues(int $count, int $expectedResultSize)
     {
         $this->assertCount($expectedResultSize, $this->getExampleCollection()->random($count));
     }
@@ -649,7 +649,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToColumn
      */
-    function testColumn(array $values, $key, array $expectedColumn)
+    function testShouldGetColumn(array $values, $key, array $expectedColumn)
     {
         $c = new Collection($values);
         $column = $c->column($key);
@@ -676,7 +676,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testFilter()
+    function testShouldFilter()
     {
         $c = $this->getExampleCollection();
 
@@ -688,7 +688,7 @@ class CollectionTest extends TestCase
         $this->assertNotSame($c, $filtered); // should return new instance
     }
 
-    function testApply()
+    function testShouldApplyCallback()
     {
         $c = $this->getExampleCollection();
 
@@ -700,7 +700,7 @@ class CollectionTest extends TestCase
         $this->assertNotSame($c, $mapped); // should return new instance
     }
 
-    function testMap()
+    function testShouldMap()
     {
         $c = $this->getExampleCollection();
 
@@ -721,7 +721,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToIntersect
      */
-    function testIntersect(array $values, array $iterables, array $expectedIntersection)
+    function testShouldIntersect(array $values, array $iterables, array $expectedIntersection)
     {
         $c = new Collection($values);
 
@@ -742,7 +742,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testUintersect()
+    function testShouldIntersectWithCustomComparator()
     {
         $c = new Collection([
             ['id' => 1, 'value' => 'one'],
@@ -776,7 +776,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToDiff
      */
-    function testDiff(array $values, array $iterables, array $expectedDiff)
+    function testShouldDiff(array $values, array $iterables, array $expectedDiff)
     {
         $c = new Collection($values);
 
@@ -797,7 +797,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testUdiff()
+    function testShouldDiffWithCustomComparator()
     {
         $c = new Collection([
             ['id' => 1, 'value' => 'one'],
@@ -831,7 +831,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideValuesToSort
      */
-    function testSort(array $unsortedValues, array $expectedSortedValues, int $flags = SORT_REGULAR)
+    function testShouldSort(array $unsortedValues, array $expectedSortedValues, int $flags = SORT_REGULAR)
     {
         $c = new Collection($unsortedValues);
 
@@ -860,7 +860,7 @@ class CollectionTest extends TestCase
         ];
     }
 
-    function testUsort()
+    function testShouldSortWithCustomComparator()
     {
         $c = new Collection([1, 2, 3, 4]);
 
@@ -871,7 +871,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([4, 3, 2, 1], $c->usort($comparator));
     }
 
-    function testCount()
+    function testShouldCount()
     {
         $this->assertSame(0, (new Collection())->count());
         $this->assertSame(3, $this->getExampleCollection()->count());
@@ -880,7 +880,7 @@ class CollectionTest extends TestCase
     /**
      * @dataProvider provideIndexesToAccess
      */
-    function testArrayReadAccess(array $values, int $index, bool $exists, $expectedValue)
+    function testShouldReadAsArray(array $values, int $index, bool $exists, $expectedValue)
     {
         $c = new Collection($values);
 
@@ -888,7 +888,7 @@ class CollectionTest extends TestCase
         $this->assertSame($expectedValue, $c[$index]);
     }
 
-    function testArrayWriteAccess()
+    function testShouldWriteAsArray()
     {
         $c = $this->getExampleCollection();
 
@@ -918,7 +918,7 @@ class CollectionTest extends TestCase
         $this->assertCollection(['new foo', 'qux'], $c);
     }
 
-    function testGetIterator()
+    function testShouldGetIterator()
     {
         $this->assertSame(
             $this->getExampleValues(),
@@ -926,7 +926,7 @@ class CollectionTest extends TestCase
         );
     }
 
-    function testBlankVarargsShortCircuit()
+    function testBlankVarargsShouldShortCircuit()
     {
         $collection = $this->getExampleCollection();
         $values = $collection->toArray();
@@ -955,7 +955,7 @@ class CollectionTest extends TestCase
         $this->assertCollection([], $collection->udiff($callback));
     }
 
-    function testEmptyCollectionShortCircuit()
+    function testEmptyCollectionShouldShortCircuit()
     {
         $c = new Collection();
 
