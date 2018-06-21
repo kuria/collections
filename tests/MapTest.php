@@ -345,10 +345,12 @@ class MapTest extends TestCase
             'array' => ['foo' => 'bar', 'baz' => 'qux'],
             'object' => new class () {
                 public $foo = '123';
+
                 public $baz = '456';
             },
             'protectedObject' => new class () {
                 protected $foo = 'private';
+
                 protected $baz = 'private';
             },
             'magicObject' => new class () {
