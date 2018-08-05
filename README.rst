@@ -74,6 +74,7 @@ Collection method overview
 
 Refer to doc comments of the respective methods for more information.
 
+
 Static methods
 --------------
 
@@ -94,18 +95,19 @@ Instance methods
 - ``first()`` - get first value
 - ``last()`` - get last value
 - ``indexes(): array`` - get all indexes
-- ``slice($index, $length = null)`` - extract a slice of the collection
-- ``replace($index, $value)`` - replace a value at the given index
-- ``push(...$values)`` - push one or more values onto the end of the collection
+- ``slice($index, $length = null): self`` - extract a slice of the collection
+- ``replace($index, $value): void`` - replace a value at the given index
+- ``push(...$values): void`` - push one or more values onto the end of the collection
 - ``pop()`` - pop a value off the end of the collection
-- ``unshift()`` - shift a value off the beginning of the collection
-- ``insert($index, $value)`` - insert one or more values at the given index
+- ``unshift(...$values)`` - prepend one or more values to the beginning of the collection
+- ``shift(): void`` - shift a value off the beginning of the collection
+- ``insert($index, $value): void`` - insert one or more values at the given index
 - ``remove(...$indexes)`` - remove values at the given indexes
-- ``clear()`` - remove all values
-- ``splice($index, $length = null, $replacement = null)`` - remove or replace a part of the collection
-- ``sum()`` - calculate the sum of all values
-- ``product()`` - calculate the product of all values
-- ``implode($delimiter = '')`` - join all values using a delimiter
+- ``clear(): void`` - remove all values
+- ``splice($index, $length = null, $replacement = null): void`` - remove or replace a part of the collection
+- ``sum(): int|float`` - calculate the sum of all values
+- ``product(): int|float`` - calculate the product of all values
+- ``implode($delimiter = ''): string`` - join all values using a delimiter
 - ``reduce($callback, $initial = null)`` - reduce the collection to a single value
 - ``reverse(): self`` - reverse the collection
 - ``chunk($size): self[]`` - split the collection into chunks of the given size
@@ -224,17 +226,17 @@ Instance methods
 - ``toArray(): bool`` - get all pairs as an array
 - ``isEmpty(): bool`` - see if the map is empty
 - ``count(): int`` - count pairs
-- ``has($key)`` - see if the given key exists
+- ``has($key): bool`` - see if the given key exists
 - ``contains($value, $strict = true): bool`` - see if the given value exists
 - ``find($value, $strict = true)`` - try to find the first occurence of a value
 - ``get($key)`` - get value for the given key
 - ``values(): Collection`` - get all values
 - ``keys(): Collection`` - get all keys
-- ``set($key, $value)`` - define a pair
-- ``add(...$others)`` - add pairs from other iterables to this map
-- ``fill($keys, $value)`` - fill specific keys with a value
-- ``remove(...$keys)`` - remove pairs with the given keys
-- ``clear()`` - remove all pairs
+- ``set($key, $value): void`` - define a pair
+- ``add(...$others): void`` - add pairs from other iterables to this map
+- ``fill($keys, $value): void`` - fill specific keys with a value
+- ``remove(...$keys): void`` - remove pairs with the given keys
+- ``clear(): void`` - remove all pairs
 - ``reduce($reducer, $initial = null)`` - reduce the map to a single value
 - ``flip(): self`` - swap keys and values
 - ``shuffle(): self`` - randomize pair order
