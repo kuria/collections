@@ -111,7 +111,7 @@ class MapTest extends TestCase
             [$pairs, 'baz', true, 'qux'],
             [$pairs, 123, true, 456],
             [$pairs, 'null', true, null],
-            [$pairs, 'mlem', false, null],
+            [$pairs, 'quux', false, null],
             [$pairs, 0, false, null],
             [$pairs, 111, false, null],
         ];
@@ -151,8 +151,8 @@ class MapTest extends TestCase
             [$pairs, 456, true, 123],
             [$pairs, '456', true, null],
             [$pairs, '456', false, 123],
-            [$pairs, 'mlem', true, null],
-            [$pairs, 'mlem', false, null],
+            [$pairs, 'quux', true, null],
+            [$pairs, 'quux', false, null],
             [$objectValues, $object, true, 'ipsum'],
             [$objectValues, clone $object, true, null],
             [$objectValues, clone $object, false, 'ipsum'],
@@ -197,7 +197,7 @@ class MapTest extends TestCase
     {
         $map = $this->getExampleMap();
 
-        $map->add(['foo' => 'new bar', 'mlem' => 'boop']);
+        $map->add(['foo' => 'new bar', 'quux' => 'corge']);
         $map->add(new Map([123 => 445566]), [789 => 101]);
 
         $this->assertMap(
@@ -205,7 +205,7 @@ class MapTest extends TestCase
                 'foo' => 'new bar',
                 'baz' => 'qux',
                 123 => 445566,
-                'mlem' => 'boop',
+                'quux' => 'corge',
                 789 => 101,
             ],
             $map
@@ -485,7 +485,7 @@ class MapTest extends TestCase
                 [
                     'x' => ['id' => 0, 'value' => 'zero'],
                     'b' => ['id' => 2, 'value' => 'also two'],
-                    'e'=> ['id' => 5, 'value' => 'mlem'],
+                    'e'=> ['id' => 5, 'value' => 'quux'],
                 ]
             )
         );
@@ -525,7 +525,7 @@ class MapTest extends TestCase
             ],
             [
                 ['a' => 'foo', 'b' => 'bar', 'c' => 'baz', 'd' => 'qux'],
-                [['a' => 'bar', 'b' => 'bar', 'c' => 'qux'], new Map(['c' => 'baz', 'd' => 'mlem'])],
+                [['a' => 'bar', 'b' => 'bar', 'c' => 'qux'], new Map(['c' => 'baz', 'd' => 'quux'])],
                 ['a' => 'foo', 'd' => 'qux'],
             ],
         ];
@@ -557,7 +557,7 @@ class MapTest extends TestCase
                 [
                     'x' => ['id' => 1, 'value' => 'zero'],
                     'a' => ['id' => 1, 'value' => 'also one'],
-                    'e' => ['id' => 5, 'value' => 'mlem'],
+                    'e' => ['id' => 5, 'value' => 'quux'],
                 ]
             )
         );

@@ -351,14 +351,14 @@ class CollectionTest extends TestCase
         $c->insert(1, 'qux');
         $this->assertCollection(['bar', 'qux', 'baz', 'foo'], $c);
 
-        $c->insert(999, 'mlem');
-        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'mlem'], $c);
+        $c->insert(999, 'quux');
+        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'quux'], $c);
 
-        $c->insert(-1, 'boop');
-        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'boop', 'mlem'], $c);
+        $c->insert(-1, 'corge');
+        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'corge', 'quux'], $c);
 
         $c->insert(-2, 'bablbam', 'gudbaj');
-        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'bablbam', 'gudbaj', 'boop', 'mlem'], $c);
+        $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'bablbam', 'gudbaj', 'corge', 'quux'], $c);
     }
 
     function testShouldRemove()
@@ -767,7 +767,7 @@ class CollectionTest extends TestCase
                 [
                     ['id' => 0, 'value' => 'zero'],
                     ['id' => 2, 'value' => 'also two'],
-                    ['id' => 5, 'value' => 'mlem'],
+                    ['id' => 5, 'value' => 'quux'],
                 ]
             )
         );
@@ -793,7 +793,7 @@ class CollectionTest extends TestCase
             [['foo'], [], []],
             [[], [[]], []],
             [['foo', 'bar', 'baz'], [['foo', 'baz', 'qux']], ['bar']],
-            [['foo', 'bar', 'baz', 'qux'], [['bar', 'lorem', 'ipsum'], new Collection(['baz', 'mlem'])], ['foo', 'qux']],
+            [['foo', 'bar', 'baz', 'qux'], [['bar', 'lorem', 'ipsum'], new Collection(['baz', 'quux'])], ['foo', 'qux']],
         ];
     }
 
@@ -822,7 +822,7 @@ class CollectionTest extends TestCase
                 [
                     ['id' => 0, 'value' => 'zero'],
                     ['id' => 1, 'value' => 'also one'],
-                    ['id' => 5, 'value' => 'mlem'],
+                    ['id' => 5, 'value' => 'quux'],
                 ]
             )
         );
@@ -902,7 +902,7 @@ class CollectionTest extends TestCase
 
         $e = null;
         try {
-            $c[4] = 'mlem';
+            $c[4] = 'quux';
         } catch (\OutOfBoundsException $e) {
             $this->assertSame(
                 'Cannot replace value at index 4 because it does not exist (valid indexes are 0 to 3)',

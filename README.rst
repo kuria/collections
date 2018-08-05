@@ -269,7 +269,7 @@ Array access and iteration
    // add some pairs
    $map['foo'] = 'bar';
    $map['baz'] = 'qux';
-   $map['mlem'] = 'boop';
+   $map['quux'] = 'corge';
 
    // remove a pair
    unset($map['baz']);
@@ -294,4 +294,4 @@ Output:
   Value with key "baz" does not exist
   There are 2 pairs in total
   foo: bar
-  mlem: boop
+  quux: corge
