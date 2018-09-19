@@ -12,7 +12,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
 
     function __construct(?iterable $values = null)
     {
-        $this->values = $values ? IterableHelper::iterableToList($values) : [];
+        $this->values = $values ? IterableHelper::toList($values) : [];
     }
 
     /**
@@ -261,7 +261,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
             $this->values,
             $index,
             $length ?? count($this->values),
-            $replacement ? IterableHelper::iterableToArray($replacement) : null
+            $replacement ? IterableHelper::toArray($replacement) : null
         );
     }
 
@@ -511,7 +511,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        return new static(array_intersect($this->values, ...IterableHelper::iterablesToArrays(...$others)));
+        return new static(array_intersect($this->values, ...IterableHelper::toArrays(...$others)));
     }
 
     /**
@@ -532,7 +532,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        $args = IterableHelper::iterablesToArrays(...$others);
+        $args = IterableHelper::toArrays(...$others);
         $args[] = $comparator;
 
         return new static(array_uintersect($this->values, ...$args));
@@ -553,7 +553,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        return new static(array_diff($this->values, ...IterableHelper::iterablesToArrays(...$others)));
+        return new static(array_diff($this->values, ...IterableHelper::toArrays(...$others)));
     }
 
     /**
@@ -574,7 +574,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        $args = IterableHelper::iterablesToArrays(...$others);
+        $args = IterableHelper::toArrays(...$others);
         $args[] = $comparator;
 
         return new static(array_udiff($this->values, ...$args));

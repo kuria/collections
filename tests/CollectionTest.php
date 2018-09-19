@@ -2,9 +2,9 @@
 
 namespace Kuria\Collections;
 
-use PHPUnit\Framework\TestCase;
+use Kuria\DevMeta\Test;
 
-class CollectionTest extends TestCase
+class CollectionTest extends Test
 {
     /**
      * @dataProvider provideConstructorValues
@@ -708,7 +708,7 @@ class CollectionTest extends TestCase
             return ['key.' . $value => 'value.' . $value];
         });
 
-        $this->assertEquals(
+        $this->assertLooselyIdentical(
             new Map([
                 'key.foo' => 'value.foo',
                 'key.bar' => 'value.bar',

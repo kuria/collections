@@ -2,9 +2,9 @@
 
 namespace Kuria\Collections;
 
-use PHPUnit\Framework\TestCase;
+use Kuria\DevMeta\Test;
 
-class MapTest extends TestCase
+class MapTest extends Test
 {
     /**
      * @dataProvider provideConstructorPairs

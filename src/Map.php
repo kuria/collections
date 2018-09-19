@@ -13,7 +13,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     function __construct(?iterable $pairs = null)
     {
         if ($pairs) {
-            $this->pairs = IterableHelper::iterableToArray($pairs);
+            $this->pairs = IterableHelper::toArray($pairs);
         } else {
             $this->pairs = [];
         }
@@ -28,7 +28,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      */
     static function combine(iterable $keys, iterable $values): self
     {
-        return new static(array_combine(IterableHelper::iterableToArray($keys), IterableHelper::iterableToArray($values)));
+        return new static(array_combine(IterableHelper::toArray($keys), IterableHelper::toArray($values)));
     }
 
     /**
@@ -302,7 +302,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        return new static(array_intersect_assoc($this->pairs, ...IterableHelper::iterablesToArrays(...$others)));
+        return new static(array_intersect_assoc($this->pairs, ...IterableHelper::toArrays(...$others)));
     }
 
     /**
@@ -323,7 +323,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        $args = IterableHelper::iterablesToArrays(...$others);
+        $args = IterableHelper::toArrays(...$others);
         $args[] = $comparator;
 
         return new static(array_uintersect_assoc($this->pairs, ...$args));
@@ -344,7 +344,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        return new static(array_diff_assoc($this->pairs, ...IterableHelper::iterablesToArrays(...$others)));
+        return new static(array_diff_assoc($this->pairs, ...IterableHelper::toArrays(...$others)));
     }
 
     /**
@@ -365,7 +365,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
             return new static();
         }
 
-        $args = IterableHelper::iterablesToArrays(...$others);
+        $args = IterableHelper::toArrays(...$others);
         $args[] = $comparator;
 
         return new static(array_udiff_assoc($this->pairs, ...$args));

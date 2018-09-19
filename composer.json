@@ -4,10 +4,11 @@
     "keywords": ["collection", "list", "map", "object"],
     "license": "MIT",
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "kuria/iterable": "^1.0"
     },
     "require-dev": {
-        "kuria/dev-meta": "^0.4.0"
+        "kuria/dev-meta": "^0.5"
     },
     "autoload": {
         "psr-4": {

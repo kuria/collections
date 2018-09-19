@@ -3,8 +3,8 @@ Collections
 
 Object-oriented collection structures.
 
-.. image:: https://travis-ci.org/kuria/collections.svg?branch=master
-   :target: https://travis-ci.org/kuria/collections
+.. image:: https://travis-ci.com/kuria/collections.svg?branch=master
+   :target: https://travis-ci.com/kuria/collections
 
 .. contents::
 
