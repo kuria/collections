@@ -14,7 +14,7 @@ class CollectionTest extends Test
         $this->assertCollection($expectedValues, new Collection($values));
     }
 
-    function provideConstructorValues(): array
+    function provideConstructorValues()
     {
         $arrayWithCustomKeys = ['foo' => 'one', 'bar' => 'two', 'baz' => 'three'];
         $arrayWithCustomIntKeys = [3 => 1, 4 => 2, 5 => 3];
@@ -44,7 +44,7 @@ class CollectionTest extends Test
         $this->assertCollection($expectedValues, $c);
     }
 
-    function provideFillValues(): array
+    function provideFillValues()
     {
         return [
             // value, count, expectedValues
@@ -63,7 +63,7 @@ class CollectionTest extends Test
         $this->assertCollection($expectedValues, Collection::explode(...$args));
     }
 
-    function provideExplodeValues(): array
+    function provideExplodeValues()
     {
         $string = 'foo,bar,baz';
 
@@ -125,7 +125,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedIndex, $c->find($value, $strict));
     }
 
-    function provideValuesAndIndexes(): array
+    function provideValuesAndIndexes()
     {
         $object = (object) ['property' => 'value'];
 
@@ -178,7 +178,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedLast, $c->last());
     }
 
-    function provideFirstAndLastValues(): array
+    function provideFirstAndLastValues()
     {
         return [
             // values, expectedFirst, expectedLast
@@ -200,7 +200,7 @@ class CollectionTest extends Test
         $this->assertSame(array_keys($values), $c->indexes());
     }
 
-    function provideValues(): array
+    function provideValues()
     {
         return [
             // values
@@ -221,7 +221,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $slice); // should return new instance
     }
 
-    function provideSliceOffsets(): array
+    function provideSliceOffsets()
     {
         return [
             // index, length, expectedValues
@@ -441,7 +441,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedResult, (new Collection($values))->sum());
     }
 
-    function provideValuesToSum(): array
+    function provideValuesToSum()
     {
         return [
             // values, expectedResult
@@ -461,7 +461,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedResult, (new Collection($values))->product());
     }
 
-    function provideValuesToProduct(): array
+    function provideValuesToProduct()
     {
         return [
             // values, expectedResult
@@ -481,7 +481,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedResult, (new Collection($values))->implode($delimiter));
     }
 
-    function provideValuesToImplode(): array
+    function provideValuesToImplode()
     {
         return [
             // values, delimiter, expectedResult
@@ -499,7 +499,7 @@ class CollectionTest extends Test
         $this->assertSame($expectedResult, (new Collection($values))->reduce($reducer, $initial));
     }
 
-    function provideValuesToReduce(): array
+    function provideValuesToReduce()
     {
         $reducer = function ($result, $value) {
             return $result + $value;
@@ -541,7 +541,7 @@ class CollectionTest extends Test
         }
     }
 
-    function provideValuesToChunk(): array
+    function provideValuesToChunk()
     {
         return [
             // values, size, expectedChunks
@@ -570,7 +570,7 @@ class CollectionTest extends Test
         }
     }
 
-    function provideValuesToSplit(): array
+    function provideValuesToSplit()
     {
         return [
             // values, number, expectedParts
@@ -595,7 +595,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $unique); // should return new instance
     }
 
-    function provideNonUniqueValues(): array
+    function provideNonUniqueValues()
     {
         $object = (object) ['property' => 123];
         $equalObject = (object) ['property' => '123'];
@@ -633,7 +633,7 @@ class CollectionTest extends Test
         $this->assertCount($expectedResultSize, $this->getExampleCollection()->random($count));
     }
 
-    function provideRandomCounts(): array
+    function provideRandomCounts()
     {
         return [
             // count, expectedResultSize
@@ -658,7 +658,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $column); // should return new instance
     }
 
-    function provideValuesToColumn(): array
+    function provideValuesToColumn()
     {
         $values = [
             ['foo' => 'bar', 'baz' => 'qux'],
@@ -731,7 +731,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $intersection); // should return new instance
     }
 
-    function provideValuesToIntersect(): array
+    function provideValuesToIntersect()
     {
         return [
             // values, iterables, expectedIntersection
@@ -786,7 +786,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $diff); // should return new instance
     }
 
-    function provideValuesToDiff(): array
+    function provideValuesToDiff()
     {
         return [
             // values, iterables, expectedDiff
@@ -846,7 +846,7 @@ class CollectionTest extends Test
         $this->assertNotSame($c, $reverseSorted); // should return new instance
     }
 
-    function provideValuesToSort(): array
+    function provideValuesToSort()
     {
         return [
             // unsortedValues, expectedSortedValues, [flags]

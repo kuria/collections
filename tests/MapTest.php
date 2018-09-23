@@ -14,7 +14,7 @@ class MapTest extends Test
         $this->assertSame($expectedArrayData, (new Map($pairs))->toArray());
     }
 
-    function provideConstructorPairs(): array
+    function provideConstructorPairs()
     {
         $pairs = ['foo' => 'bar', 'baz' => new \stdClass()];
 
@@ -36,7 +36,7 @@ class MapTest extends Test
         $this->assertMap($expectedPairs, Map::combine($keys, $values));
     }
 
-    function provideKeysAndValuesToCombine(): array
+    function provideKeysAndValuesToCombine()
     {
         return [
             // keys, values, expectedPairs
@@ -128,7 +128,7 @@ class MapTest extends Test
         $this->assertSame($expectedKey, $map->find($value, $strict));
     }
 
-    function provideKeysAndValues(): array
+    function provideKeysAndValues()
     {
         $object = (object) ['property' => 'value'];
 
@@ -173,7 +173,7 @@ class MapTest extends Test
         $this->assertSame(array_keys($pairs), $map->keys()->toArray());
     }
 
-    function providePairs(): array
+    function providePairs()
     {
         return [
             // pairs
@@ -275,7 +275,7 @@ class MapTest extends Test
         $this->assertSame($expectedResult, (new Map($pairs))->reduce($reducer, $initial));
     }
 
-    function providePairsToReduce(): array
+    function providePairsToReduce()
     {
         $reducer = function ($result, $key, $value) {
             if ($result !== null) {
@@ -339,7 +339,7 @@ class MapTest extends Test
         $this->assertNotSame($map, $column); // should return new instance
     }
 
-    function providePairsToColumn(): array
+    function providePairsToColumn()
     {
         $pairs = [
             'array' => ['foo' => 'bar', 'baz' => 'qux'],
@@ -432,7 +432,7 @@ class MapTest extends Test
         $this->assertNotSame($map, $intersection); // should return new instance
     }
 
-    function providePairsToIntersect(): array
+    function providePairsToIntersect()
     {
         return [
             // pairs, iterables, expectedIntersection
@@ -504,7 +504,7 @@ class MapTest extends Test
         $this->assertNotSame($map, $diff); // should return new instance
     }
 
-    function providePairsToDiff(): array
+    function providePairsToDiff()
     {
         return [
             // pairs, iterables, expectedDiff
@@ -581,7 +581,7 @@ class MapTest extends Test
         $this->assertNotSame($map, $reverseSorted); // should return new instance
     }
 
-    function providePairsToSort(): array
+    function providePairsToSort()
     {
         return [
             // unsortedPairs, expectedSortedPairs, [flags]
