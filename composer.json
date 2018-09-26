@@ -8,7 +8,7 @@
         "kuria/iterable": "^1.0"
     },
     "require-dev": {
-        "kuria/dev-meta": "^0.5"
+        "kuria/dev-meta": "^0.6"
     },
     "autoload": {
         "psr-4": {
