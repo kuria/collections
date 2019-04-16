@@ -29,6 +29,59 @@ class MapTest extends Test
     }
 
     /**
+     * @dataProvider provideIterablesToBuild
+     */
+    function testShouldBuild(iterable $iterable, callable $mapper, array $expectedPairs)
+    {
+        $this->assertMap($expectedPairs, Map::build($iterable, $mapper));
+    }
+
+    function provideIterablesToBuild()
+    {
+        return [
+            // iterable, mapper, expectedPairs
+            [
+                [],
+                static function () {
+                    static::fail('Mapper should not be called for empty iterables');
+                },
+                [],
+            ],
+            [
+                [
+                    123 => 'foo',
+                    456 => 'bar',
+                    789 => 'baz',
+                ],
+                static function ($key, $value) {
+                    return ['key.' . $key => 'value.' . $value];
+                },
+                [
+                    'key.123' => 'value.foo',
+                    'key.456' => 'value.bar',
+                    'key.789' => 'value.baz',
+                ],
+            ],
+            [
+                [
+                    123 => 'foo',
+                    456 => 'bar',
+                    789 => 'baz',
+                ],
+                static function ($key, $value) {
+                    return [
+                        [123 => 'a', 456 => 'duplicate', 789 => 'duplicate'][$key] => $value,
+                    ];
+                },
+                [
+                    'a' => 'foo',
+                    'duplicate' => 'bar',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider provideKeysAndValuesToCombine
      */
     function testShouldCombine($keys, $values, array $expectedPairs)
@@ -407,6 +460,18 @@ class MapTest extends Test
         $this->assertNotSame($map, $filtered); // should return new instance
     }
 
+    function testShouldApply()
+    {
+        $map = $this->getExampleMap();
+
+        $applied = $map->apply(function ($key, $value) {
+            return $key . $value;
+        });
+
+        $this->assertMap(['foo' => 'foobar', 'baz' => 'bazqux', 123 => '123456'], $applied);
+        $this->assertNotSame($map, $applied); // should return new instance
+    }
+
     function testShouldMap()
     {
         $map = $this->getExampleMap();
@@ -437,16 +502,6 @@ class MapTest extends Test
         return [
             // pairs, iterables, expectedIntersection
             [
-                ['foo' => 'bar'],
-                [],
-                [],
-            ],
-            [
-                [],
-                [[]],
-                [],
-            ],
-            [
                 ['a' => 'foo', 'b' => 'bar', 'c' => 'baz'],
                 [['a' => 'foo', 'b' => 'baz', 'c' => 'baz', 'd' => 'foo']],
                 ['a' => 'foo', 'c' => 'baz'],
@@ -472,23 +527,125 @@ class MapTest extends Test
             return $a['id'] <=> $b['id'];
         };
 
+        $intersection = $map->uintersect(
+            $comparator,
+            [
+                'b' => ['id' => 2, 'value' => 'bar'],
+                'c' => ['id' => 4, 'value' => 'qux'],
+            ],
+            new Map([
+                'x' => ['id' => 0, 'value' => 'zero'],
+                'b' => ['id' => 2, 'value' => 'also two'],
+                'e'=> ['id' => 5, 'value' => 'quux'],
+            ])
+        );
+
         $this->assertMap(
             [
                 'b' => ['id' => 2, 'value' => 'two'],
             ],
-            $map->uintersect(
-                $comparator,
+            $intersection
+        );
+
+        $this->assertNotSame($map, $intersection); // should return new instance
+    }
+
+    /**
+     * @dataProvider providePairsForKeyIntersection
+     */
+    function testShouldIntersectKeys(array $pairs, array $iterables, array $expectedIntersection)
+    {
+        $map = new Map($pairs);
+
+        $intersection = $map->intersectKeys(...$iterables);
+
+        $this->assertMap($expectedIntersection, $intersection);
+        $this->assertNotSame($map, $intersection); // should return new instance
+    }
+
+    function providePairsForKeyIntersection()
+    {
+        return [
+            // pairs, iterables, expectedIntersection
+            [
                 [
-                    'b' => ['id' => 2, 'value' => 'bar'],
-                    'c' => ['id' => 4, 'value' => 'qux'],
+                    'foo' => 'bar',
+                    'baz' => 'qux',
+                    'quux' => 'quuz',
                 ],
                 [
-                    'x' => ['id' => 0, 'value' => 'zero'],
-                    'b' => ['id' => 2, 'value' => 'also two'],
-                    'e'=> ['id' => 5, 'value' => 'quux'],
-                ]
-            )
+                    [
+                        'lorem' => 'ipsum',
+                        'baz' => 'dolor',
+                        'quux' => 'sit',
+                        'amet' => 123,
+                    ],
+                ],
+                [
+                    'baz' => 'qux',
+                    'quux' => 'quuz',
+                ],
+            ],
+            [
+                [
+                    'foo' => 'bar',
+                    'baz' => 'qux',
+                    'quux' => 'quuz',
+                ],
+                [
+                    new Map([
+                        'lorem' => 'ipsum',
+                        'baz' => 'dolor',
+                        'quux' => 'sit',
+                        'amet' => 123,
+                    ]),
+                    [
+                        'a' => 'b',
+                        'c' => 'd',
+                        'foo' => 'e',
+                        'baz' => 'qux',
+                    ],
+                ],
+                [
+                    'baz' => 'qux',
+                ],
+            ],
+        ];
+    }
+
+    function testShouldItersectKeysUsingCustomComparator()
+    {
+        $map = new Map([
+            'foo' => 'bar',
+            'baz' => 'qux',
+            'quux' => 'quuz',
+        ]);
+
+        $keyIntersection = $map->uintersectKeys(
+            function ($a, $b) {
+                return trim($a) <=> trim($b);
+            },
+            [
+                ' foo ' => 123,
+                ' bar ' => 456,
+                ' baz ' => 789,
+            ],
+            new Map([
+                ' baz  ' => 'test',
+                '  foo ' => 'dummy',
+                'quux ' => 'example',
+            ])
         );
+
+        $this->assertMap(
+            [
+                'foo' => 'bar',
+                'baz' => 'qux',
+            ],
+            $keyIntersection
+        );
+
+        $this->assertNotSame($map, $keyIntersection); // should return new instance
     }
 
     /**
@@ -508,16 +665,6 @@ class MapTest extends Test
     {
         return [
             // pairs, iterables, expectedDiff
-            [
-                ['foo' => 'bar'],
-                [],
-                [],
-            ],
-            [
-                [],
-                [[]],
-                [],
-            ],
             [
                 ['a' => 'foo', 'b' => 'bar', 'c' => 'baz'],
                 [['a' => 'foo', 'c' => 'baz', 'd' => 'qux']],
@@ -540,27 +687,119 @@ class MapTest extends Test
             'x' => ['id' => 1, 'value' => 'one'],
         ]);
 
-        $comparator = function (array $a, array $b) {
-            return $a['id'] <=> $b['id'];
-        };
-
         $this->assertMap(
             [
                 'c' => ['id' => 3, 'value' => 'three'],
             ],
             $map->udiff(
-                $comparator,
+                function (array $a, array $b) {
+                    return $a['id'] <=> $b['id'];
+                },
                 [
                     'b' => ['id' => 2, 'value' => 'bar'],
                     'd' => ['id' => 4, 'value' => 'qux'],
                 ],
-                [
+                new Map([
                     'x' => ['id' => 1, 'value' => 'zero'],
                     'a' => ['id' => 1, 'value' => 'also one'],
                     'e' => ['id' => 5, 'value' => 'quux'],
-                ]
+                ])
             )
         );
+    }
+
+    /**
+     * @dataProvider providePairsForKeyDiff
+     */
+    function testShouldDiffKeys(array $pairs, array $iterables, array $expectedDiff)
+    {
+        $map = new Map($pairs);
+
+        $diff = $map->diffKeys(...$iterables);
+
+        $this->assertMap($expectedDiff, $diff);
+        $this->assertNotSame($map, $diff); // should return new instance
+    }
+
+    function providePairsForKeyDiff()
+    {
+        return [
+            // pairs, iterables, expectedDiff
+            [
+                [
+                    'foo' => 123,
+                    'bar' => 456,
+                    'baz' => 789,
+                ],
+                [
+                    [
+                        'foo' => 'bar',
+                        'baz' => 'qux',
+                        'quux' => 'quuz',
+                    ],
+                ],
+                [
+                    'bar' => 456,
+                ],
+            ],
+            [
+                [
+                    'foo' => 123,
+                    'bar' => 456,
+                    'baz' => 789,
+                    'qux' => 'test',
+                ],
+                [
+                    [
+                        'foo' => 'bar',
+                        'quux' => 'quuz',
+                    ],
+                    new Map([
+                        'baz' => 'qux',
+                        'quux' => 'quuz',
+                    ]),
+                ],
+                [
+                    'bar' => 456,
+                    'qux' => 'test',
+                ],
+            ],
+        ];
+    }
+
+    function testShouldDiffKeysUsingCustomComparator()
+    {
+        $map = new Map([
+            'foo' => 123,
+            'bar' => 456,
+            'baz' => 789,
+            'qux' => 'test',
+        ]);
+
+        $keyDiff = $map->udiffKeys(
+            function ($a, $b) {
+                return trim($a) <=> trim($b);
+            },
+            [
+                '  bar ' => 'lorem',
+                ' quux ' => 'ipsum',
+
+            ],
+            new Map([
+                ' qux  ' => 'dolor',
+                'quux' => 'quuz',
+            ])
+        );
+
+        $this->assertMap(
+            [
+                'foo' => 123,
+                'baz' => 789,
+            ],
+            $keyDiff
+        );
+
+        $this->assertNotSame($map, $keyDiff); // should return new instance
     }
 
     /**
@@ -728,8 +967,12 @@ class MapTest extends Test
         // empty result
         $this->assertMap([], $map->intersect());
         $this->assertMap([], $map->uintersect($callback));
+        $this->assertMap([], $map->intersectKeys());
+        $this->assertMap([], $map->uintersectKeys($callback));
         $this->assertMap([], $map->diff());
         $this->assertMap([], $map->udiff($callback));
+        $this->assertMap([], $map->diffKeys());
+        $this->assertMap([], $map->udiffKeys($callback));
     }
 
     function testEmptyMapShouldShortCircuit()
@@ -748,8 +991,12 @@ class MapTest extends Test
         $this->assertMap([], $map->map($callback));
         $this->assertMap([], $map->intersect(['value']));
         $this->assertMap([], $map->uintersect($callback, ['value']));
+        $this->assertMap([], $map->intersectKeys(['value']));
+        $this->assertMap([], $map->uintersectKeys($callback, ['value']));
         $this->assertMap([], $map->diff(['value']));
         $this->assertMap([], $map->udiff($callback, ['value']));
+        $this->assertMap([], $map->diffKeys(['value']));
+        $this->assertMap([], $map->udiffKeys($callback, ['value']));
         $this->assertMap([], $map->sort());
         $this->assertMap([], $map->usort($callback));
         $this->assertMap([], $map->ksort());

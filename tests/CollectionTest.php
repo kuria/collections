@@ -704,15 +704,15 @@ class CollectionTest extends Test
     {
         $c = $this->getExampleCollection();
 
-        $map = $c->map(function ($value) {
-            return ['key.' . $value => 'value.' . $value];
+        $map = $c->map(function ($key, $value) {
+            return ['index.' . $key => 'value.' . $value];
         });
 
         $this->assertLooselyIdentical(
             new Map([
-                'key.foo' => 'value.foo',
-                'key.bar' => 'value.bar',
-                'key.baz' => 'value.baz',
+                'index.0' => 'value.foo',
+                'index.1' => 'value.bar',
+                'index.2' => 'value.baz',
             ]),
             $map
         );
@@ -735,8 +735,6 @@ class CollectionTest extends Test
     {
         return [
             // values, iterables, expectedIntersection
-            [['foo'], [], []],
-            [[], [[]], []],
             [['foo', 'bar', 'baz'], [['foo', 'baz', 'qux']], ['foo', 'baz']],
             [['foo', 'bar', 'baz'], [['bar', 'baz', 'qux'], new Collection(['foo', 'bar'])], ['bar']],
         ];
@@ -790,8 +788,6 @@ class CollectionTest extends Test
     {
         return [
             // values, iterables, expectedDiff
-            [['foo'], [], []],
-            [[], [[]], []],
             [['foo', 'bar', 'baz'], [['foo', 'baz', 'qux']], ['bar']],
             [['foo', 'bar', 'baz', 'qux'], [['bar', 'lorem', 'ipsum'], new Collection(['baz', 'quux'])], ['foo', 'qux']],
         ];

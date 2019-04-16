@@ -10,6 +10,9 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     /** @var array */
     private $pairs;
 
+    /**
+     * Create a map from an iterable
+     */
     function __construct(?iterable $pairs = null)
     {
         if ($pairs) {
@@ -17,6 +20,26 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
         } else {
             $this->pairs = [];
         }
+    }
+
+    /**
+     * Build a map from an iterable using a callback
+     *
+     * The callback should return key => value pairs for each given key and value.
+     *
+     * If the same key is returned multiple times, only the first returned pair with that key will be used.
+     *
+     * Mapper signature: ($key, $value): array
+     */
+    static function build(iterable $iterable, callable $mapper): Map
+    {
+        $pairs = [];
+
+        foreach ($iterable as $k => $v) {
+            $pairs += $mapper($k, $v);
+        }
+
+        return new Map($pairs);
     }
 
     /**
@@ -160,7 +183,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns the final iteration result or $initial if the map is empty.
      *
-     * Callback signature: ($result, $key, $value): mixed
+     * Reducer signature: ($result, $key, $value): mixed
      */
     function reduce(callable $reducer, $initial = null)
     {
@@ -246,7 +269,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new map with all accepted pairs.
      *
-     * Callback signature: ($key, $value): bool
+     * Filter signature: ($key, $value): bool
      *
      * @return static
      */
@@ -264,6 +287,26 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Apply the callback to all pairs
+     *
+     * Returns a new map with the modified values.
+     *
+     * Callback signature: ($key, $value): mixed
+     *
+     * @return static
+     */
+    function apply(callable $callback): self
+    {
+        $pairs = [];
+
+        foreach ($this->pairs as $k => $v) {
+            $pairs[$k] = $callback($k, $v);
+        }
+
+        return new Map($pairs);
+    }
+
+    /**
      * Remap pairs using the given callback
      *
      * The callback should accept 2 arguments (key and value) and return new key => value pairs.
@@ -272,7 +315,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new map with the returned pairs.
      *
-     * Callback signature: ($key, $value): array
+     * Mapper signature: ($key, $value): array
      *
      * @return static
      */
@@ -313,7 +356,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new map containing all pairs of this map that are also present in all of the given iterables.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -327,6 +370,46 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
         $args[] = $comparator;
 
         return new static(array_uintersect_assoc($this->pairs, ...$args));
+    }
+
+    /**
+     * Compute a key intersection with the given iterables
+     *
+     * Returns a new map containing all pairs of this map whose keys are also present in all of the given iterables.
+     *
+     * @return static
+     */
+    function intersectKeys(iterable ...$others): self
+    {
+        if (empty($this->pairs) || empty($others)) {
+            return new static();
+        }
+
+        return new static(array_intersect_key($this->pairs, ...IterableHelper::toArrays(...$others)));
+    }
+
+    /**
+     * Compute a key intersection with the given iterables using a custom comparator
+     *
+     * The comparator should accept 2 arguments and return an integer less than, equal to, or greater than zero
+     * if the first key is considered to be respectively less than, equal to, or greater than the second.
+     *
+     * Returns a new map containing all pairs of this map whose keys are also present in all of the given iterables.
+     *
+     * Comparator signature: ($a, $b): int
+     *
+     * @return static
+     */
+    function uintersectKeys(callable $comparator, iterable ...$others): self
+    {
+        if (empty($this->pairs) || empty($others)) {
+            return new static();
+        }
+
+        $args = IterableHelper::toArrays(...$others);
+        $args[] = $comparator;
+
+        return new static(array_intersect_ukey($this->pairs, ...$args));
     }
 
     /**
@@ -355,7 +438,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new map containing all pairs of this map that are not present in any of the given iterables.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -369,6 +452,46 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
         $args[] = $comparator;
 
         return new static(array_udiff_assoc($this->pairs, ...$args));
+    }
+
+    /**
+     * Compute a key difference between this map and the given iterables
+     *
+     * Returns a new map containing all pairs of this map whose keys are not present in all of the given iterables.
+     *
+     * @return static
+     */
+    function diffKeys(iterable ...$others): self
+    {
+        if (empty($this->pairs) || empty($others)) {
+            return new static();
+        }
+
+        return new static(array_diff_key($this->pairs, ...IterableHelper::toArrays(...$others)));
+    }
+
+    /**
+     * Compute a key difference between this map and the given iterables using a custom comparator
+     *
+     * The comparator should accept 2 arguments and return an integer less than, equal to, or greater than zero
+     * if the first key is considered to be respectively less than, equal to, or greater than the second.
+     *
+     * Returns a new map containing all pairs of this map whose keys are not present in all of the given iterables.
+     *
+     * Comparator signature: ($a, $b): int
+     *
+     * @return static
+     */
+    function udiffKeys(callable $comparator, iterable ...$others): self
+    {
+        if (empty($this->pairs) || empty($others)) {
+            return new static();
+        }
+
+        $args = IterableHelper::toArrays(...$others);
+        $args[] = $comparator;
+
+        return new static(array_diff_ukey($this->pairs, ...$args));
     }
 
     /**
@@ -410,7 +533,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new sorted map.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -465,7 +588,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new sorted map.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -508,6 +631,6 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
 
     function getIterator(): \Traversable
     {
-        yield from $this->pairs;
+        return new \ArrayIterator($this->pairs);
     }
 }

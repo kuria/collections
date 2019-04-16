@@ -10,6 +10,9 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     /** @var array */
     private $values;
 
+    /**
+     * Create a collections from an iterable
+     */
     function __construct(?iterable $values = null)
     {
         $this->values = $values ? IterableHelper::toList($values) : [];
@@ -312,7 +315,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns the final iteration result or $initial if the collection is empty.
      *
-     * Callback signature: ($result, $value): mixed
+     * Comparator signature: ($result, $value): mixed
      */
     function reduce(callable $reducer, $initial = null)
     {
@@ -445,7 +448,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new collection with all accepted values.
      *
-     * Callback signature: ($value): bool
+     * Filter signature: ($value): bool
      *
      * @return static
      */
@@ -479,21 +482,15 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     /**
      * Convert the collection to a map
      *
-     * The callback should return key => value pairs for each value.
+     * The callback should return key => value pairs for each given index and value.
      *
      * If the same key is returned multiple times, only the first returned pair with that key will be used.
      *
-     * Callback signature: ($value): array
+     * Mapper signature: ($index, $value): array
      */
     function map(callable $mapper): Map
     {
-        $pairs = [];
-
-        foreach ($this->values as $v) {
-            $pairs += $mapper($v);
-        }
-
-        return new Map($pairs);
+        return Map::build($this->values, $mapper);
     }
 
     /**
@@ -522,7 +519,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new collection containing all values of this collection that are also present in all of the given iterables.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -564,7 +561,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new collection containing all values of this collection that are not present in any of the given iterables.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -619,7 +616,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Returns a new sorted collection.
      *
-     * Callback signature: ($a, $b): int
+     * Comparator signature: ($a, $b): int
      *
      * @return static
      */
@@ -666,6 +663,6 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
 
     function getIterator(): \Traversable
     {
-        yield from $this->values;
+        return new \ArrayIterator($this->values);
     }
 }

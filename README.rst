@@ -217,6 +217,7 @@ Refer to doc comments of the respective methods for more information.
 Static methods
 --------------
 
+- ``build($iterable, $mapper): self`` - build a map from an iterable using a callback
 - ``combine($keys, $values): self`` - combine a list of keys and a list of values to create a map
 
 
@@ -242,11 +243,16 @@ Instance methods
 - ``shuffle(): self`` - randomize pair order
 - ``column($key, $indexKey = null): self`` - gather values from properties or array keys of all object or array values
 - ``filter($filter): self`` - filter pairs using the given callback
+- ``apply($callback): self`` - apply the callback to all pairs
 - ``map($mapper): self`` - remap pairs using the given callback
 - ``intersect(...$others): self`` - compute an intersection with the given iterables
 - ``uintersect($comparator, ...$others): self`` - compute an intersection with the given iterables using a custom comparator
+- ``intersectKeys(...$others): self`` - compute a key intersection with the given iterables
+- ``uintersectKeys($comparator, ...$others): self`` - compute a key intersection with the given iterables using a custom comparator
 - ``diff(...$others): self`` - compute a difference between this map and the given iterables
 - ``udiff($comparator, ...$others): self`` - compute a difference between this map and the given iterables using a custom comparator
+- ``diffKeys(...$others): self`` - compute a key difference between this map and the given iterables
+- ``udiffKeys($comparator, ...$others): self`` - compute a key difference between this map and the given iterables using a custom comparator
 - ``sort($flags = SORT_REGULAR, $reverse = false): self`` - sort the map using its values
 - ``usort($comparator): self`` - sort the map using its values and a custom comparator
 - ``ksort($flags = SORT_REGULAR, $reverse = false): self`` - sort the map using its keys
