@@ -11,15 +11,19 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     private $pairs;
 
     /**
+     * Internal constructor
+     */
+    private function __construct(array $pairs = [])
+    {
+        $this->pairs = $pairs;
+    }
+
+    /**
      * Create a map from an iterable
      */
-    function __construct(?iterable $pairs = null)
+    static function create(?iterable $pairs = null)
     {
-        if ($pairs) {
-            $this->pairs = IterableHelper::toArray($pairs);
-        } else {
-            $this->pairs = [];
-        }
+        return new static($pairs ? IterableHelper::toArray($pairs) : []);
     }
 
     /**
@@ -52,6 +56,14 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     static function combine(iterable $keys, iterable $values): self
     {
         return new static(array_combine(IterableHelper::toArray($keys), IterableHelper::toArray($values)));
+    }
+
+    /**
+     * Replace all pairs with the given iterable
+     */
+    function setPairs(iterable $pairs): void
+    {
+        $this->pairs = IterableHelper::toArray($pairs);
     }
 
     /**
@@ -113,7 +125,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      */
     function values(): Collection
     {
-        return new Collection($this->pairs);
+        return Collection::create($this->pairs);
     }
 
     /**
@@ -121,7 +133,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      */
     function keys(): Collection
     {
-        return new Collection(array_keys($this->pairs));
+        return Collection::create(array_keys($this->pairs));
     }
 
     /**
@@ -137,10 +149,10 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * If the same key exists in multiple iterables, the last value will be used.
      */
-    function add(iterable ...$others): void
+    function add(iterable ...$iterables): void
     {
-        foreach ($others as $other) {
-            foreach ($other as $k => $v) {
+        foreach ($iterables as $iterable) {
+            foreach ($iterable as $k => $v) {
                 $this->pairs[$k] = $v;
             }
         }
@@ -331,6 +343,22 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Merge the map with the given iterables
+     *
+     * If the same key exists in multiple iterables, the last given value will be used.
+     *
+     * Returns a new map with the merged pairs.
+     */
+    function merge(iterable ...$iterables): self
+    {
+        if (empty($iterables)) {
+            return clone $this;
+        }
+
+        return new static(array_replace($this->pairs, ...IterableHelper::toArrays($iterables)));
+    }
+
+    /**
      * Compute an intersection with the given iterables
      *
      * Values are converted to a string before the comparison.
@@ -339,13 +367,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function intersect(iterable ...$others): self
+    function intersect(iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_intersect_assoc($this->pairs, ...IterableHelper::toArrays(...$others)));
+        return new static(array_intersect_assoc($this->pairs, ...IterableHelper::toArrays($iterables)));
     }
 
     /**
@@ -360,13 +388,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function uintersect(callable $comparator, iterable ...$others): self
+    function uintersect(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
         return new static(array_uintersect_assoc($this->pairs, ...$args));
@@ -379,13 +407,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function intersectKeys(iterable ...$others): self
+    function intersectKeys(iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_intersect_key($this->pairs, ...IterableHelper::toArrays(...$others)));
+        return new static(array_intersect_key($this->pairs, ...IterableHelper::toArrays($iterables)));
     }
 
     /**
@@ -400,13 +428,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function uintersectKeys(callable $comparator, iterable ...$others): self
+    function uintersectKeys(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
         return new static(array_intersect_ukey($this->pairs, ...$args));
@@ -421,13 +449,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function diff(iterable ...$others): self
+    function diff(iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_diff_assoc($this->pairs, ...IterableHelper::toArrays(...$others)));
+        return new static(array_diff_assoc($this->pairs, ...IterableHelper::toArrays($iterables)));
     }
 
     /**
@@ -442,13 +470,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function udiff(callable $comparator, iterable ...$others): self
+    function udiff(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
         return new static(array_udiff_assoc($this->pairs, ...$args));
@@ -461,13 +489,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function diffKeys(iterable ...$others): self
+    function diffKeys(iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_diff_key($this->pairs, ...IterableHelper::toArrays(...$others)));
+        return new static(array_diff_key($this->pairs, ...IterableHelper::toArrays($iterables)));
     }
 
     /**
@@ -482,13 +510,13 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function udiffKeys(callable $comparator, iterable ...$others): self
+    function udiffKeys(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->pairs) || empty($others)) {
+        if (empty($this->pairs) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
         return new static(array_diff_ukey($this->pairs, ...$args));

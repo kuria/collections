@@ -7,14 +7,21 @@ use Kuria\DevMeta\Test;
 class CollectionTest extends Test
 {
     /**
-     * @dataProvider provideConstructorValues
+     * @dataProvider provideValuesForCreate
      */
     function testShouldCreateCollection(?iterable $values, array $expectedValues)
     {
-        $this->assertCollection($expectedValues, new Collection($values));
+        $this->assertCollection($expectedValues, Collection::create($values));
+
+        if ($values !== null) {
+            $c = Collection::create();
+            $c->setValues($values);
+
+            $this->assertCollection($expectedValues, $c);
+        }
     }
 
-    function provideConstructorValues()
+    function provideValuesForCreate()
     {
         $arrayWithCustomKeys = ['foo' => 'one', 'bar' => 'two', 'baz' => 'three'];
         $arrayWithCustomIntKeys = [3 => 1, 4 => 2, 5 => 3];
@@ -23,15 +30,22 @@ class CollectionTest extends Test
             // values, expectedValues
             'should accept null' => [null, []],
             'should accept empty array' => [[], []],
-            'should accept empty traversable' => [new Collection(), []],
+            'should accept empty traversable' => [Collection::create(), []],
             'should accept non-empty array' => [[1, 2, 3], [1, 2, 3]],
-            'should accept non-empty traversable' => [new Collection([1, 2, 3]), [1, 2 ,3]],
+            'should accept non-empty traversable' => [Collection::collect(1, 2, 3), [1, 2, 3]],
             'should discard keys' => [$arrayWithCustomKeys, ['one', 'two', 'three']],
             'should discard integer keys' => [$arrayWithCustomIntKeys, [1, 2, 3]],
             'should discard empty key' => [['' => null], [null]],
-            'should discard keys from traversable' => [new Map($arrayWithCustomKeys), ['one', 'two', 'three']],
-            'should discard integer keys from traversable' => [new Map($arrayWithCustomIntKeys), [1, 2, 3]],
+            'should discard keys from traversable' => [Map::create($arrayWithCustomKeys), ['one', 'two', 'three']],
+            'should discard integer keys from traversable' => [Map::create($arrayWithCustomIntKeys), [1, 2, 3]],
         ];
+    }
+
+    function testShouldCreateCollectionFromVarargs()
+    {
+        $this->assertCollection([], Collection::collect());
+        $this->assertCollection([1, 2, 3], Collection::collect(1, 2, 3));
+        $this->assertCollection([['foo'], ['bar', 'baz'], ['qux']], Collection::collect(['foo'], ['bar', 'baz'], ['qux']));
     }
 
     /**
@@ -81,7 +95,7 @@ class CollectionTest extends Test
 
     function testShouldCheckIfCollectionIsEmpty()
     {
-        $this->assertTrue((new Collection())->isEmpty());
+        $this->assertTrue((Collection::create())->isEmpty());
         $this->assertFalse($this->getExampleCollection()->isEmpty());
     }
 
@@ -90,7 +104,7 @@ class CollectionTest extends Test
      */
     function testShouldCheckExistenceAndGetValue(array $values, int $index, bool $exists, $expectedValue = null)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $this->assertSame($exists, $c->has($index));
         $this->assertSame($expectedValue, $c->get($index));
@@ -119,7 +133,7 @@ class CollectionTest extends Test
      */
     function testShouldCheckIfValueExistsAndFindIt(array $values, $value, bool $strict, ?int $expectedIndex)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $this->assertSame($expectedIndex !== null, $c->contains($value, $strict));
         $this->assertSame($expectedIndex, $c->find($value, $strict));
@@ -172,7 +186,7 @@ class CollectionTest extends Test
      */
     function testShouldGetFirstAndLast(array $values, $expectedFirst, $expectedLast)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $this->assertSame($expectedFirst, $c->first());
         $this->assertSame($expectedLast, $c->last());
@@ -194,7 +208,7 @@ class CollectionTest extends Test
      */
     function testShouldConvertToArrayAndGetIndexes(array $values)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $this->assertSame($values, $c->toArray());
         $this->assertSame(array_keys($values), $c->indexes());
@@ -217,8 +231,7 @@ class CollectionTest extends Test
         $c = $this->getExampleCollection();
         $slice = $c->slice($index, $length);
 
-        $this->assertCollection($expectedValues, $slice);
-        $this->assertNotSame($c, $slice); // should return new instance
+        $this->assertCollection($expectedValues, $slice, $c);
     }
 
     function provideSliceOffsets()
@@ -277,7 +290,7 @@ class CollectionTest extends Test
 
     function testReplaceShouldThrowExceptionIfCollectionIsEmpty()
     {
-        $c = new Collection();
+        $c = Collection::create();
 
         $this->expectException(\OutOfBoundsException::class);
         $this->expectExceptionMessage('Cannot replace value at index 0 because it does not exist (the collection is empty)');
@@ -297,7 +310,7 @@ class CollectionTest extends Test
 
     function testShouldPushAndPop()
     {
-        $c = new Collection();
+        $c = Collection::create();
 
         $c->push('one');
         $this->assertCollection(['one'], $c);
@@ -317,7 +330,7 @@ class CollectionTest extends Test
 
     function testShiftAndUnshift()
     {
-        $c = new Collection();
+        $c = Collection::create();
 
         $c->unshift('c');
         $this->assertCollection(['c'], $c);
@@ -337,7 +350,7 @@ class CollectionTest extends Test
 
     function testShouldInsert()
     {
-        $c = new Collection();
+        $c = Collection::create();
 
         $c->insert(0); // no values given
         $this->assertCollection([], $c);
@@ -359,6 +372,66 @@ class CollectionTest extends Test
 
         $c->insert(-2, 'bablbam', 'gudbaj');
         $this->assertCollection(['bar', 'qux', 'baz', 'foo', 'bablbam', 'gudbaj', 'corge', 'quux'], $c);
+    }
+
+    /**
+     * @dataProvider provideValuesToPad
+     */
+    function testShouldPad(array $values, int $length, $value, array $expectedPaddedValues)
+    {
+        $c = Collection::create($values);
+        $c->pad($length, $value);
+
+        $this->assertCollection($expectedPaddedValues, $c);
+    }
+
+    function provideValuesToPad()
+    {
+        return [
+            // values, length, value, expectedPaddedValues
+            [
+                [],
+                0,
+                'dummy',
+                [],
+            ],
+            [
+                [],
+                3,
+                'foo',
+                ['foo', 'foo', 'foo'],
+            ],
+            [
+                [],
+                -3,
+                'foo',
+                ['foo', 'foo', 'foo'],
+            ],
+            [
+                [1, 2, 3],
+                5,
+                99,
+                [1, 2, 3, 99, 99],
+            ],
+            [
+                [1, 2, 3],
+                -5,
+                99,
+                [99, 99, 1, 2, 3],
+            ],
+            [
+                [1, 2, 3, 4, 5],
+                5,
+                99,
+                [1, 2, 3, 4, 5],
+            ],
+            [
+                [1, 2, 3, 4, 5],
+                -5,
+                99,
+                [1, 2, 3, 4, 5],
+            ],
+        ];
     }
 
     function testShouldRemove()
@@ -420,7 +493,7 @@ class CollectionTest extends Test
         $c->splice(0, 0, ['qux']);
         $this->assertCollection(['qux', 'foo', 'bar-2', 'baz-2'], $c);
 
-        $c->splice(-4, 3, new Collection(['foo', 'bar']));
+        $c->splice(-4, 3, Collection::collect('foo', 'bar'));
         $this->assertCollection(['foo', 'bar', 'baz-2'], $c);
 
         $c->splice(-2, -1, null);
@@ -438,7 +511,7 @@ class CollectionTest extends Test
      */
     function testShouldSum(array $values, $expectedResult)
     {
-        $this->assertSame($expectedResult, (new Collection($values))->sum());
+        $this->assertSame($expectedResult, (Collection::create($values))->sum());
     }
 
     function provideValuesToSum()
@@ -458,7 +531,7 @@ class CollectionTest extends Test
      */
     function testShouldProduct(array $values, $expectedResult)
     {
-        $this->assertSame($expectedResult, (new Collection($values))->product());
+        $this->assertSame($expectedResult, (Collection::create($values))->product());
     }
 
     function provideValuesToProduct()
@@ -478,7 +551,7 @@ class CollectionTest extends Test
      */
     function testShouldImplode(array $values, string $delimiter, string $expectedResult)
     {
-        $this->assertSame($expectedResult, (new Collection($values))->implode($delimiter));
+        $this->assertSame($expectedResult, (Collection::create($values))->implode($delimiter));
     }
 
     function provideValuesToImplode()
@@ -496,7 +569,7 @@ class CollectionTest extends Test
      */
     function testShouldReduce(array $values, callable $reducer, $initial, $expectedResult)
     {
-        $this->assertSame($expectedResult, (new Collection($values))->reduce($reducer, $initial));
+        $this->assertSame($expectedResult, (Collection::create($values))->reduce($reducer, $initial));
     }
 
     function provideValuesToReduce()
@@ -518,8 +591,7 @@ class CollectionTest extends Test
         $c = $this->getExampleCollection();
         $reversed = $c->reverse();
 
-        $this->assertCollection(['baz', 'bar', 'foo'], $reversed);
-        $this->assertNotSame($c, $reversed); // should return new instance
+        $this->assertCollection(['baz', 'bar', 'foo'], $reversed, $c);
     }
 
     /**
@@ -527,7 +599,7 @@ class CollectionTest extends Test
      */
     function testShouldChunk(array $values, int $size, array $expectedChunks)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $chunks = $c->chunk($size);
 
@@ -536,8 +608,7 @@ class CollectionTest extends Test
         foreach ($expectedChunks as $index => $expectedChunk) {
             $this->assertArrayHasKey($index, $chunks);
             $this->assertInstanceOf(Collection::class, $chunks[$index]);
-            $this->assertCollection($expectedChunk, $chunks[$index]);
-            $this->assertNotSame($c, $chunks[$index]); // should return new instance for each chunk
+            $this->assertCollection($expectedChunk, $chunks[$index], $c);
         }
     }
 
@@ -556,7 +627,7 @@ class CollectionTest extends Test
      */
     function testShouldSplit(array $values, int $number, array $expectedParts)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $parts = $c->split($number);
 
@@ -565,8 +636,7 @@ class CollectionTest extends Test
         foreach ($expectedParts as $index => $expectedPart) {
             $this->assertArrayHasKey($index, $parts);
             $this->assertInstanceOf(Collection::class, $parts[$index]);
-            $this->assertCollection($expectedPart, $parts[$index]);
-            $this->assertNotSame($c, $parts[$index]); // should return new instance for each chunk
+            $this->assertCollection($expectedPart, $parts[$index], $c);
         }
     }
 
@@ -587,12 +657,11 @@ class CollectionTest extends Test
      */
     function testShouldGetUniqueValues(array $values, array $expectedUniqueValues)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $unique = $c->unique();
 
-        $this->assertCollection($expectedUniqueValues, $unique);
-        $this->assertNotSame($c, $unique); // should return new instance
+        $this->assertCollection($expectedUniqueValues, $unique, $c);
     }
 
     function provideNonUniqueValues()
@@ -651,11 +720,10 @@ class CollectionTest extends Test
      */
     function testShouldGetColumn(array $values, $key, array $expectedColumn)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
         $column = $c->column($key);
 
-        $this->assertCollection($expectedColumn, $column);
-        $this->assertNotSame($c, $column); // should return new instance
+        $this->assertCollection($expectedColumn, $column, $c);
     }
 
     function provideValuesToColumn()
@@ -670,9 +738,54 @@ class CollectionTest extends Test
 
         return [
             // values, key, expectedColumn
+            [[], 'dummy', []],
             [$values, 'foo', ['bar', 'a']],
             [$values, 'baz', ['qux']],
             [$values, 'nonexistent', []],
+        ];
+    }
+
+    /**
+     * @dataProvider provideValuesForColumnMapping
+     */
+    function testShouldMapColumn(array $values, $indexKey, $valueKey, array $expectedPairs)
+    {
+        $this->assertSame($expectedPairs, Collection::create($values)->mapColumn($indexKey, $valueKey)->toArray());
+    }
+
+    function provideValuesForColumnMapping()
+    {
+        $values = [
+            ['key' => 'lorem', 'value' => 'ipsum'],
+            (object) ['key' => 'dolor', 'value' => 'sit'],
+            new \stdClass(),
+            'not_an_object',
+            123456,
+        ];
+
+        return [
+            // values, indexKey, valueKey, expectedPairs
+            [
+                [],
+                'key',
+                'value',
+                [],
+            ],
+            [
+                $values,
+                'key',
+                'value',
+                [
+                    'lorem' => 'ipsum',
+                    'dolor' => 'sit',
+                ],
+            ],
+            [
+                $values,
+                'nonexistent',
+                'nonexistent',
+                [],
+            ],
         ];
     }
 
@@ -684,8 +797,7 @@ class CollectionTest extends Test
             return $value === 'foo' || $value === 'bar';
         });
 
-        $this->assertCollection(['foo', 'bar'], $filtered);
-        $this->assertNotSame($c, $filtered); // should return new instance
+        $this->assertCollection(['foo', 'bar'], $filtered, $c);
     }
 
     function testShouldApplyCallback()
@@ -696,8 +808,7 @@ class CollectionTest extends Test
             return "{$value}-2";
         });
 
-        $this->assertCollection(['foo-2', 'bar-2', 'baz-2'], $mapped);
-        $this->assertNotSame($c, $mapped); // should return new instance
+        $this->assertCollection(['foo-2', 'bar-2', 'baz-2'], $mapped, $c);
     }
 
     function testShouldMap()
@@ -709,7 +820,7 @@ class CollectionTest extends Test
         });
 
         $this->assertLooselyIdentical(
-            new Map([
+            Map::create([
                 'index.0' => 'value.foo',
                 'index.1' => 'value.bar',
                 'index.2' => 'value.baz',
@@ -719,16 +830,54 @@ class CollectionTest extends Test
     }
 
     /**
+     * @dataProvider provideValuesToMerge
+     */
+    function testShouldMerge(array $values, array $iterables, array $expectedResult)
+    {
+        $c = Collection::create($values);
+
+        $result = $c->merge(...$iterables);
+
+        $this->assertCollection($expectedResult, $result);
+    }
+
+    function provideValuesToMerge()
+    {
+        return [
+            // values, iterables, expectedResult
+            [
+                [],
+                [],
+                [],
+            ],
+            [
+                [],
+                [[1, 2, 3]],
+                [1, 2, 3],
+            ],
+            [
+                [1, 2, 3],
+                [[3, 4, 5]],
+                [1, 2, 3, 3, 4, 5],
+            ],
+            [
+                [1, 2, 3],
+                [[3, 4, 5], Collection::collect(5, 6, 7)],
+                [1, 2, 3, 3, 4, 5, 5, 6, 7],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider provideValuesToIntersect
      */
     function testShouldIntersect(array $values, array $iterables, array $expectedIntersection)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $intersection = $c->intersect(...$iterables);
 
-        $this->assertCollection($expectedIntersection, $intersection);
-        $this->assertNotSame($c, $intersection); // should return new instance
+        $this->assertCollection($expectedIntersection, $intersection, $c);
     }
 
     function provideValuesToIntersect()
@@ -736,13 +885,13 @@ class CollectionTest extends Test
         return [
             // values, iterables, expectedIntersection
             [['foo', 'bar', 'baz'], [['foo', 'baz', 'qux']], ['foo', 'baz']],
-            [['foo', 'bar', 'baz'], [['bar', 'baz', 'qux'], new Collection(['foo', 'bar'])], ['bar']],
+            [['foo', 'bar', 'baz'], [['bar', 'baz', 'qux'], Collection::collect('foo', 'bar')], ['bar']],
         ];
     }
 
     function testShouldIntersectWithCustomComparator()
     {
-        $c = new Collection([
+        $c = Collection::create([
             ['id' => 1, 'value' => 'one'],
             ['id' => 2, 'value' => 'two'],
             ['id' => 3, 'value' => 'three'],
@@ -776,12 +925,11 @@ class CollectionTest extends Test
      */
     function testShouldDiff(array $values, array $iterables, array $expectedDiff)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $diff = $c->diff(...$iterables);
 
-        $this->assertCollection($expectedDiff, $diff);
-        $this->assertNotSame($c, $diff); // should return new instance
+        $this->assertCollection($expectedDiff, $diff, $c);
     }
 
     function provideValuesToDiff()
@@ -789,13 +937,13 @@ class CollectionTest extends Test
         return [
             // values, iterables, expectedDiff
             [['foo', 'bar', 'baz'], [['foo', 'baz', 'qux']], ['bar']],
-            [['foo', 'bar', 'baz', 'qux'], [['bar', 'lorem', 'ipsum'], new Collection(['baz', 'quux'])], ['foo', 'qux']],
+            [['foo', 'bar', 'baz', 'qux'], [['bar', 'lorem', 'ipsum'], Collection::collect('baz', 'quux')], ['foo', 'qux']],
         ];
     }
 
     function testShouldDiffWithCustomComparator()
     {
-        $c = new Collection([
+        $c = Collection::create([
             ['id' => 1, 'value' => 'one'],
             ['id' => 2, 'value' => 'two'],
             ['id' => 3, 'value' => 'three'],
@@ -829,17 +977,15 @@ class CollectionTest extends Test
      */
     function testShouldSort(array $unsortedValues, array $expectedSortedValues, int $flags = SORT_REGULAR)
     {
-        $c = new Collection($unsortedValues);
+        $c = Collection::create($unsortedValues);
 
         $sorted = $c->sort($flags);
 
-        $this->assertCollection($expectedSortedValues, $sorted);
-        $this->assertNotSame($c, $sorted); // should return new instance
+        $this->assertCollection($expectedSortedValues, $sorted, $c);
 
         $reverseSorted = $c->sort($flags, true);
 
-        $this->assertCollection(array_reverse($expectedSortedValues), $reverseSorted);
-        $this->assertNotSame($c, $reverseSorted); // should return new instance
+        $this->assertCollection(array_reverse($expectedSortedValues), $reverseSorted, $c);
     }
 
     function provideValuesToSort()
@@ -858,7 +1004,7 @@ class CollectionTest extends Test
 
     function testShouldSortWithCustomComparator()
     {
-        $c = new Collection([1, 2, 3, 4]);
+        $c = Collection::collect(1, 2, 3, 4);
 
         $comparator = function ($a, $b) {
             return ($a <=> $b) * -1;
@@ -869,7 +1015,7 @@ class CollectionTest extends Test
 
     function testShouldCount()
     {
-        $this->assertSame(0, (new Collection())->count());
+        $this->assertSame(0, (Collection::create())->count());
         $this->assertSame(3, $this->getExampleCollection()->count());
     }
 
@@ -878,7 +1024,7 @@ class CollectionTest extends Test
      */
     function testShouldReadAsArray(array $values, int $index, bool $exists, $expectedValue)
     {
-        $c = new Collection($values);
+        $c = Collection::create($values);
 
         $this->assertSame($exists, isset($c[$index]));
         $this->assertSame($expectedValue, $c[$index]);
@@ -953,7 +1099,7 @@ class CollectionTest extends Test
 
     function testEmptyCollectionShouldShortCircuit()
     {
-        $c = new Collection();
+        $c = Collection::create();
 
         $callback = function () {
             $this->fail('Callback should not be called when the collection is empty');
@@ -977,12 +1123,13 @@ class CollectionTest extends Test
 
     private function getExampleCollection(): Collection
     {
-        return new Collection($this->getExampleValues());
+        return Collection::create($this->getExampleValues());
     }
 
-    private function assertCollection(array $expectedValues, Collection $actual): void
+    private function assertCollection(array $expectedValues, Collection $actual, ?Collection $expectedNotSameAs = null): void
     {
         $this->assertSame($expectedValues, $actual->toArray());
         $this->assertSame(array_keys($expectedValues), $actual->indexes());
+        $this->assertNotSame($expectedNotSameAs, $actual);
     }
 }

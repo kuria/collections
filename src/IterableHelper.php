@@ -10,7 +10,7 @@ abstract class IterableHelper extends \Kuria\Iterable\IterableHelper
     /**
      * Convert a list of iterables to a list of arrays
      */
-    static function toArrays(...$iterables): array
+    static function toArrays($iterables): array
     {
         $arrays = [];
 

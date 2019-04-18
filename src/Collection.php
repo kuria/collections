@@ -11,11 +11,29 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     private $values;
 
     /**
-     * Create a collections from an iterable
+     * Internal constructor
      */
-    function __construct(?iterable $values = null)
+    private function __construct(array $values = [])
     {
-        $this->values = $values ? IterableHelper::toList($values) : [];
+        $this->values = $values;
+    }
+
+    /**
+     * Create a collection from an iterable
+     *
+     * If no values are given, an empty collection will be created.
+     */
+    static function create(?iterable $values = null): self
+    {
+        return new static($values ? IterableHelper::toList($values) : []);
+    }
+
+    /**
+     * Create a collection from the passed arguments
+     */
+    static function collect(...$values): self
+    {
+        return new static($values);
     }
 
     /**
@@ -42,6 +60,14 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     static function explode(string $string, string $delimiter, int $limit = PHP_INT_MAX)
     {
         return new static(explode($delimiter, $string, $limit));
+    }
+
+    /**
+     * Replace all values with the given iterable
+     */
+    function setValues(iterable $values): void
+    {
+        $this->values = IterableHelper::toList($values);
     }
 
     /**
@@ -219,6 +245,16 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Pad the collection with a value to the specified length
+     *
+     * If $length is positive, the new values are appended. Otherwise they are prepended.
+     */
+    function pad(int $length, $value): void
+    {
+        $this->values = array_pad($this->values, $length, $value);
+    }
+
+    /**
      * Remove values at the given indexes
      *
      * Any values after each removed index will be re-indexed.
@@ -381,7 +417,7 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      */
     function unique(): self
     {
-        return new static(array_unique($this->values, SORT_REGULAR));
+        return new static(array_values(array_unique($this->values, SORT_REGULAR)));
     }
 
     /**
@@ -442,6 +478,14 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Build a map using properties or array indexes of all object or array values
+     */
+    function mapColumn($indexKey, $valueKey): Map
+    {
+        return Map::create(array_column($this->values, $valueKey, $indexKey));
+    }
+
+    /**
      * Filter values using the given callback
      *
      * The callback should return TRUE to accept a value and FALSE to reject it.
@@ -494,6 +538,24 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Merge the collection with the given iterables
+     *
+     * Returns a new collection with the merged values.
+     */
+    function merge(iterable ...$iterables): self
+    {
+        $values = $this->values;
+
+        foreach ($iterables as $iterable) {
+            foreach ($iterable as $value) {
+                $values[] = $value;
+            }
+        }
+
+        return new static($values);
+    }
+
+    /**
      * Compute an intersection with the given iterables
      *
      * Values are converted strings before the comparison.
@@ -502,13 +564,13 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function intersect(iterable ...$others): self
+    function intersect(iterable ...$iterables): self
     {
-        if (empty($this->values) || empty($others)) {
+        if (empty($this->values) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_intersect($this->values, ...IterableHelper::toArrays(...$others)));
+        return new static(array_values(array_intersect($this->values, ...IterableHelper::toArrays($iterables))));
     }
 
     /**
@@ -523,16 +585,16 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function uintersect(callable $comparator, iterable ...$others): self
+    function uintersect(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->values) || empty($others)) {
+        if (empty($this->values) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
-        return new static(array_uintersect($this->values, ...$args));
+        return new static(array_values(array_uintersect($this->values, ...$args)));
     }
 
     /**
@@ -544,13 +606,13 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function diff(iterable ...$others): self
+    function diff(iterable ...$iterables): self
     {
-        if (empty($this->values) || empty($others)) {
+        if (empty($this->values) || empty($iterables)) {
             return new static();
         }
 
-        return new static(array_diff($this->values, ...IterableHelper::toArrays(...$others)));
+        return new static(array_values(array_diff($this->values, ...IterableHelper::toArrays($iterables))));
     }
 
     /**
@@ -565,16 +627,16 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function udiff(callable $comparator, iterable ...$others): self
+    function udiff(callable $comparator, iterable ...$iterables): self
     {
-        if (empty($this->values) || empty($others)) {
+        if (empty($this->values) || empty($iterables)) {
             return new static();
         }
 
-        $args = IterableHelper::toArrays(...$others);
+        $args = IterableHelper::toArrays($iterables);
         $args[] = $comparator;
 
-        return new static(array_udiff($this->values, ...$args));
+        return new static(array_values(array_udiff($this->values, ...$args)));
     }
 
     /**

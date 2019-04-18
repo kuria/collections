@@ -7,14 +7,21 @@ use Kuria\DevMeta\Test;
 class MapTest extends Test
 {
     /**
-     * @dataProvider provideConstructorPairs
+     * @dataProvider providePairsForCreate
      */
     function testShouldCreateMap(?iterable $pairs, array $expectedArrayData)
     {
-        $this->assertSame($expectedArrayData, (new Map($pairs))->toArray());
+        $this->assertMap($expectedArrayData, Map::create($pairs));
+
+        if ($pairs !== null) {
+            $map = Map::create();
+            $map->setPairs($pairs);
+
+            $this->assertMap($expectedArrayData, $map);
+        }
     }
 
-    function provideConstructorPairs()
+    function providePairsForCreate()
     {
         $pairs = ['foo' => 'bar', 'baz' => new \stdClass()];
 
@@ -24,7 +31,7 @@ class MapTest extends Test
             'should accept empty array' => [[], []],
             'should accept empty traversable' => [new \ArrayObject(), []],
             'should accept non-empty array' => [$pairs, $pairs],
-            'should accept non-empty traversable' => [new Map($pairs), $pairs],
+            'should accept non-empty traversable' => [Map::create($pairs), $pairs],
         ];
     }
 
@@ -109,8 +116,8 @@ class MapTest extends Test
                 [123 => 789, 456 => 101],
             ],
             [
-                new Collection(['one','two']),
-                new Collection([1, 2]),
+                Collection::collect('one', 'two'),
+                Collection::collect(1, 2),
                 ['one' => 1, 'two' => 2],
             ],
         ];
@@ -123,7 +130,7 @@ class MapTest extends Test
 
     function testShouldCheckIfMapIsEmpty()
     {
-        $this->assertTrue((new Map())->isEmpty());
+        $this->assertTrue((Map::create())->isEmpty());
         $this->assertFalse($this->getExampleMap()->isEmpty());
     }
 
@@ -146,7 +153,7 @@ class MapTest extends Test
      */
     function testShouldCheckKeyAndGetValue(array $pairs, $key, bool $exists, $expectedValue = null)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $this->assertSame($exists, $map->has($key));
         $this->assertSame($expectedValue, $map->get($key));
@@ -175,7 +182,7 @@ class MapTest extends Test
      */
     function testShouldCheckAndFindValue(array $pairs, $value, bool $strict, $expectedKey)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $this->assertSame($expectedKey !== null, $map->contains($value, $strict));
         $this->assertSame($expectedKey, $map->find($value, $strict));
@@ -220,7 +227,7 @@ class MapTest extends Test
      */
     function testShouldGetValuesAndKeys(array $pairs)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $this->assertSame(array_values($pairs), $map->values()->toArray());
         $this->assertSame(array_keys($pairs), $map->keys()->toArray());
@@ -237,7 +244,7 @@ class MapTest extends Test
 
     function testShouldSet()
     {
-        $map = new Map();
+        $map = Map::create();
 
         $map->set('foo', 'bar');
         $map->set('null', null);
@@ -251,7 +258,7 @@ class MapTest extends Test
         $map = $this->getExampleMap();
 
         $map->add(['foo' => 'new bar', 'quux' => 'corge']);
-        $map->add(new Map([123 => 445566]), [789 => 101]);
+        $map->add(Map::create([123 => 445566]), [789 => 101]);
 
         $this->assertMap(
             [
@@ -267,10 +274,10 @@ class MapTest extends Test
 
     function testShouldFill()
     {
-        $map = new Map();
+        $map = Map::create();
 
         $map->fill(['foo', 'bar'], '');
-        $map->fill(new Collection(['bar', 'baz']), 123);
+        $map->fill(Collection::collect('bar', 'baz'), 123);
 
         $this->assertMap(
             [
@@ -325,7 +332,7 @@ class MapTest extends Test
      */
     function testShouldReduce(array $pairs, callable $reducer, $initial, $expectedResult)
     {
-        $this->assertSame($expectedResult, (new Map($pairs))->reduce($reducer, $initial));
+        $this->assertSame($expectedResult, (Map::create($pairs))->reduce($reducer, $initial));
     }
 
     function providePairsToReduce()
@@ -361,10 +368,9 @@ class MapTest extends Test
                 'qux' => 'baz',
                 456 => 123,
             ],
-            $flipped
+            $flipped,
+            $map
         );
-
-        $this->assertNotSame($map, $flipped); // should return new instance
     }
 
     function testShouldShuffle()
@@ -385,11 +391,10 @@ class MapTest extends Test
      */
     function testShouldGetColumn(array $pairs, $key, $indexKey, array $expectedColumn)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
         $column = $map->column($key, $indexKey);
 
-        $this->assertMap($expectedColumn, $column);
-        $this->assertNotSame($map, $column); // should return new instance
+        $this->assertMap($expectedColumn, $column, $map);
     }
 
     function providePairsToColumn()
@@ -456,8 +461,7 @@ class MapTest extends Test
             return in_array($key, ['foo', 123], true);
         });
 
-        $this->assertMap(['foo' => 'bar', 123 => 456], $filtered);
-        $this->assertNotSame($map, $filtered); // should return new instance
+        $this->assertMap(['foo' => 'bar', 123 => 456], $filtered, $map);
     }
 
     function testShouldApply()
@@ -468,8 +472,7 @@ class MapTest extends Test
             return $key . $value;
         });
 
-        $this->assertMap(['foo' => 'foobar', 'baz' => 'bazqux', 123 => '123456'], $applied);
-        $this->assertNotSame($map, $applied); // should return new instance
+        $this->assertMap(['foo' => 'foobar', 'baz' => 'bazqux', 123 => '123456'], $applied, $map);
     }
 
     function testShouldMap()
@@ -480,8 +483,69 @@ class MapTest extends Test
             return [$key . '-2' => $value . '-2'];
         });
 
-        $this->assertMap(['foo-2' => 'bar-2', 'baz-2' => 'qux-2', '123-2' => '456-2'], $mapped);
-        $this->assertNotSame($map, $mapped); // should return new instance
+        $this->assertMap(['foo-2' => 'bar-2', 'baz-2' => 'qux-2', '123-2' => '456-2'], $mapped, $map);
+    }
+
+    /**
+     * @dataProvider providePairsToMerge
+     */
+    function testShouldMerge(array $pairs, array $iterables, array $expectedResult)
+    {
+        $map = Map::create($pairs);
+
+        $result = $map->merge(...$iterables);
+
+        $this->assertMap($expectedResult, $result, $map);
+    }
+
+    function providePairsToMerge()
+    {
+        return [
+            // pairs, iterables, expectedResult
+            [
+                [],
+                [],
+                [],
+            ],
+            [
+                [],
+                [['foo' => 123, 'bar' => 456]],
+                ['foo' => 123, 'bar' => 456],
+            ],
+            [
+                [
+                    'foo' => 123,
+                    'bar' => 456,
+                    'baz' => 789,
+                ],
+                [
+                    ['foo' => 222, 'qux' => 888],
+                ],
+                [
+                    'foo' => 222,
+                    'bar' => 456,
+                    'baz' => 789,
+                    'qux' => 888,
+                ],
+            ],
+            [
+                [
+                    'foo' => 123,
+                    'bar' => 456,
+                    'baz' => 789,
+                ],
+                [
+                    ['foo' => 222, 'qux' => 888],
+                    Map::create(['bar' => 555, 'qux' => 999]),
+                ],
+                [
+                    'foo' => 222,
+                    'bar' => 555,
+                    'baz' => 789,
+                    'qux' => 999,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -489,12 +553,11 @@ class MapTest extends Test
      */
     function testShouldIntersect(array $pairs, array $iterables, array $expectedIntersection)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $intersection = $map->intersect(...$iterables);
 
-        $this->assertMap($expectedIntersection, $intersection);
-        $this->assertNotSame($map, $intersection); // should return new instance
+        $this->assertMap($expectedIntersection, $intersection, $map);
     }
 
     function providePairsToIntersect()
@@ -508,7 +571,7 @@ class MapTest extends Test
             ],
             [
                 ['a' => 'foo', 'b' => 'bar', 'c' => 'baz'],
-                [['a' => 'lorem', 'b' => 'bar', 'c' => 'ipsum'], new Map(['a' => 'dolor', 'b' => 'bar', 'c' => 'bar'])],
+                [['a' => 'lorem', 'b' => 'bar', 'c' => 'ipsum'], Map::create(['a' => 'dolor', 'b' => 'bar', 'c' => 'bar'])],
                 ['b' => 'bar'],
             ],
         ];
@@ -516,7 +579,7 @@ class MapTest extends Test
 
     function testShouldIntersectUsingCustomComparator()
     {
-        $map = new Map([
+        $map = Map::create([
             'a' => ['id' => 1, 'value' => 'one'],
             'b' => ['id' => 2, 'value' => 'two'],
             'c' => ['id' => 3, 'value' => 'three'],
@@ -533,7 +596,7 @@ class MapTest extends Test
                 'b' => ['id' => 2, 'value' => 'bar'],
                 'c' => ['id' => 4, 'value' => 'qux'],
             ],
-            new Map([
+            Map::create([
                 'x' => ['id' => 0, 'value' => 'zero'],
                 'b' => ['id' => 2, 'value' => 'also two'],
                 'e'=> ['id' => 5, 'value' => 'quux'],
@@ -544,10 +607,9 @@ class MapTest extends Test
             [
                 'b' => ['id' => 2, 'value' => 'two'],
             ],
-            $intersection
+            $intersection,
+            $map
         );
-
-        $this->assertNotSame($map, $intersection); // should return new instance
     }
 
     /**
@@ -555,12 +617,11 @@ class MapTest extends Test
      */
     function testShouldIntersectKeys(array $pairs, array $iterables, array $expectedIntersection)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $intersection = $map->intersectKeys(...$iterables);
 
-        $this->assertMap($expectedIntersection, $intersection);
-        $this->assertNotSame($map, $intersection); // should return new instance
+        $this->assertMap($expectedIntersection, $intersection, $map);
     }
 
     function providePairsForKeyIntersection()
@@ -593,7 +654,7 @@ class MapTest extends Test
                     'quux' => 'quuz',
                 ],
                 [
-                    new Map([
+                    Map::create([
                         'lorem' => 'ipsum',
                         'baz' => 'dolor',
                         'quux' => 'sit',
@@ -615,7 +676,7 @@ class MapTest extends Test
 
     function testShouldItersectKeysUsingCustomComparator()
     {
-        $map = new Map([
+        $map = Map::create([
             'foo' => 'bar',
             'baz' => 'qux',
             'quux' => 'quuz',
@@ -630,7 +691,7 @@ class MapTest extends Test
                 ' bar ' => 456,
                 ' baz ' => 789,
             ],
-            new Map([
+            Map::create([
                 ' baz  ' => 'test',
                 '  foo ' => 'dummy',
                 'quux ' => 'example',
@@ -642,10 +703,9 @@ class MapTest extends Test
                 'foo' => 'bar',
                 'baz' => 'qux',
             ],
-            $keyIntersection
+            $keyIntersection,
+            $map
         );
-
-        $this->assertNotSame($map, $keyIntersection); // should return new instance
     }
 
     /**
@@ -653,12 +713,11 @@ class MapTest extends Test
      */
     function testShouldDiff(array $pairs, array $iterables, array $expectedDiff)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $diff = $map->diff(...$iterables);
 
-        $this->assertMap($expectedDiff, $diff);
-        $this->assertNotSame($map, $diff); // should return new instance
+        $this->assertMap($expectedDiff, $diff, $map);
     }
 
     function providePairsToDiff()
@@ -672,7 +731,7 @@ class MapTest extends Test
             ],
             [
                 ['a' => 'foo', 'b' => 'bar', 'c' => 'baz', 'd' => 'qux'],
-                [['a' => 'bar', 'b' => 'bar', 'c' => 'qux'], new Map(['c' => 'baz', 'd' => 'quux'])],
+                [['a' => 'bar', 'b' => 'bar', 'c' => 'qux'], Map::create(['c' => 'baz', 'd' => 'quux'])],
                 ['a' => 'foo', 'd' => 'qux'],
             ],
         ];
@@ -680,7 +739,7 @@ class MapTest extends Test
 
     function testShouldDiffUsingCustomComparator()
     {
-        $map = new Map([
+        $map = Map::create([
             'a' => ['id' => 1, 'value' => 'one'],
             'b' => ['id' => 2, 'value' => 'two'],
             'c' => ['id' => 3, 'value' => 'three'],
@@ -699,7 +758,7 @@ class MapTest extends Test
                     'b' => ['id' => 2, 'value' => 'bar'],
                     'd' => ['id' => 4, 'value' => 'qux'],
                 ],
-                new Map([
+                Map::create([
                     'x' => ['id' => 1, 'value' => 'zero'],
                     'a' => ['id' => 1, 'value' => 'also one'],
                     'e' => ['id' => 5, 'value' => 'quux'],
@@ -713,12 +772,11 @@ class MapTest extends Test
      */
     function testShouldDiffKeys(array $pairs, array $iterables, array $expectedDiff)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $diff = $map->diffKeys(...$iterables);
 
-        $this->assertMap($expectedDiff, $diff);
-        $this->assertNotSame($map, $diff); // should return new instance
+        $this->assertMap($expectedDiff, $diff, $map);
     }
 
     function providePairsForKeyDiff()
@@ -754,7 +812,7 @@ class MapTest extends Test
                         'foo' => 'bar',
                         'quux' => 'quuz',
                     ],
-                    new Map([
+                    Map::create([
                         'baz' => 'qux',
                         'quux' => 'quuz',
                     ]),
@@ -769,7 +827,7 @@ class MapTest extends Test
 
     function testShouldDiffKeysUsingCustomComparator()
     {
-        $map = new Map([
+        $map = Map::create([
             'foo' => 123,
             'bar' => 456,
             'baz' => 789,
@@ -785,7 +843,7 @@ class MapTest extends Test
                 ' quux ' => 'ipsum',
 
             ],
-            new Map([
+            Map::create([
                 ' qux  ' => 'dolor',
                 'quux' => 'quuz',
             ])
@@ -796,10 +854,9 @@ class MapTest extends Test
                 'foo' => 123,
                 'baz' => 789,
             ],
-            $keyDiff
+            $keyDiff,
+            $map
         );
-
-        $this->assertNotSame($map, $keyDiff); // should return new instance
     }
 
     /**
@@ -807,17 +864,15 @@ class MapTest extends Test
      */
     function testShouldSort(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
     {
-        $map = new Map($unsortedPairs);
+        $map = Map::create($unsortedPairs);
 
         $sorted = $map->sort($flags);
 
-        $this->assertMap($expectedSortedPairs, $sorted);
-        $this->assertNotSame($map, $sorted); // should return new instance
+        $this->assertMap($expectedSortedPairs, $sorted, $map);
 
         $reverseSorted = $map->sort($flags, true);
 
-        $this->assertMap(array_reverse($expectedSortedPairs, true), $reverseSorted);
-        $this->assertNotSame($map, $reverseSorted); // should return new instance
+        $this->assertMap(array_reverse($expectedSortedPairs, true), $reverseSorted, $map);
     }
 
     function providePairsToSort()
@@ -860,7 +915,7 @@ class MapTest extends Test
 
     function testShouldSortUsingCustomComparator()
     {
-        $map = new Map([1, 2, 3, 4]);
+        $map = Map::create([1, 2, 3, 4]);
 
         $comparator = function ($a, $b) {
             return ($a <=> $b) * -1;
@@ -874,17 +929,15 @@ class MapTest extends Test
      */
     function testShouldSortUsingKeys(array $unsortedPairs, array $expectedSortedPairs, int $flags = SORT_REGULAR)
     {
-        $map = new Map($unsortedPairs);
+        $map = Map::create($unsortedPairs);
 
         $sorted = $map->ksort($flags);
 
-        $this->assertMap($expectedSortedPairs, $sorted);
-        $this->assertNotSame($map, $sorted); // should return new instance
+        $this->assertMap($expectedSortedPairs, $sorted, $map);
 
         $reverseSorted = $map->ksort($flags, true);
 
-        $this->assertMap(array_reverse($expectedSortedPairs, true), $reverseSorted);
-        $this->assertNotSame($map, $reverseSorted); // should return new instance
+        $this->assertMap(array_reverse($expectedSortedPairs, true), $reverseSorted, $map);
     }
 
     function providePairsToKsort(): iterable
@@ -897,7 +950,7 @@ class MapTest extends Test
 
     function testShouldSortUsingKeysAndCustomComparator()
     {
-        $map = new Map(['a' => 1, 'b' => 2, 'c' => 3]);
+        $map = Map::create(['a' => 1, 'b' => 2, 'c' => 3]);
 
         $comparator = function ($a, $b) {
             return ($a <=> $b) * -1;
@@ -908,7 +961,7 @@ class MapTest extends Test
 
     function testShouldCount()
     {
-        $this->assertSame(0, (new Map())->count());
+        $this->assertSame(0, (Map::create())->count());
         $this->assertSame(3, $this->getExampleMap()->count());
     }
 
@@ -917,7 +970,7 @@ class MapTest extends Test
      */
     function testShouldReadAsArray(array $pairs, $key, bool $exists, $expectedValue = null)
     {
-        $map = new Map($pairs);
+        $map = Map::create($pairs);
 
         $this->assertSame($exists, isset($map[$key]));
         $this->assertSame($expectedValue, $map[$key]);
@@ -977,7 +1030,7 @@ class MapTest extends Test
 
     function testEmptyMapShouldShortCircuit()
     {
-        $map = new Map();
+        $map = Map::create();
 
         $callback = function () {
             $this->fail('Callback should not be called when the map is empty');
@@ -1014,11 +1067,12 @@ class MapTest extends Test
 
     private function getExampleMap(): Map
     {
-        return new Map($this->getExamplePairs());
+        return Map::create($this->getExamplePairs());
     }
 
-    private function assertMap(array $expectedPairs, Map $map): void
+    private function assertMap(array $expectedPairs, Map $actual, ?Map $expectedNotSameAs = null): void
     {
-        $this->assertSame($expectedPairs, $map->toArray());
+        $this->assertSame($expectedPairs, $actual->toArray());
+        $this->assertNotSame($expectedNotSameAs, $actual);
     }
 }

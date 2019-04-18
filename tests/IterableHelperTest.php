@@ -18,7 +18,7 @@ class IterableHelperTest extends Test
                 ['a' => 'foo', 'b' => 'bar'],
                 ['x' => 'lorem', 'y' => 'ipsum'],
             ],
-            IterableHelper::toArrays(
+            IterableHelper::toArrays([
                 [],
                 [1, 2, 3],
                 new \ArrayIterator(['foo', 'bar', 'baz']),
@@ -32,8 +32,8 @@ class IterableHelperTest extends Test
                 (function () {
                     yield 'x'=> 'lorem';
                     yield 'y' => 'ipsum';
-                })()
-            )
+                })(),
+            ])
         );
     }
 }
