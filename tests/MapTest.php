@@ -36,6 +36,66 @@ class MapTest extends Test
     }
 
     /**
+     * @dataProvider provideIterablesToMap
+     */
+    function testShouldMap(iterable $iterable, callable $mapper, array $expectedPairs)
+    {
+        $this->assertMap($expectedPairs, Map::map($iterable, $mapper));
+    }
+
+    function provideIterablesToMap()
+    {
+        return [
+            // iterable, mapper, expectedPairs
+            'empty' => [
+                [],
+                static function () {
+                    static::fail('Mapper should not be called for empty iterables');
+                },
+                [],
+            ],
+
+            'basic' => [
+                [
+                    123 => 'foo',
+                    456 => 'bar',
+                    789 => 'baz',
+                ],
+                static function ($value) {
+                    return 'key.' . $value;
+                },
+                [
+                    'key.foo' => 'foo',
+                    'key.bar' => 'bar',
+                    'key.baz' => 'baz',
+                ],
+            ],
+
+            'iterable with multiple pairs' => [
+                new \ArrayIterator(['lorem', 'ipsum']),
+                static function ($value) {
+                    return 'key.' . $value;
+                },
+                [
+                    'key.lorem' => 'lorem',
+                    'key.ipsum' => 'ipsum',
+                ],
+            ],
+
+            'duplicate keys' => [
+                ['foo', 'bar', 'baz'],
+                static function ($value) {
+                    return ['foo' => 'a', 'bar' => 'duplicate', 'baz' => 'duplicate'][$value];
+                },
+                [
+                    'a' => 'foo',
+                    'duplicate' => 'baz',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider provideIterablesToBuild
      */
     function testShouldBuild(iterable $iterable, callable $mapper, array $expectedPairs)
@@ -47,14 +107,15 @@ class MapTest extends Test
     {
         return [
             // iterable, mapper, expectedPairs
-            [
+            'empty' => [
                 [],
                 static function () {
                     static::fail('Mapper should not be called for empty iterables');
                 },
                 [],
             ],
-            [
+
+            'basic' => [
                 [
                     123 => 'foo',
                     456 => 'bar',
@@ -69,7 +130,27 @@ class MapTest extends Test
                     'key.789' => 'value.baz',
                 ],
             ],
-            [
+
+            'iterable with multiple pairs' => [
+                new \ArrayIterator([
+                    'lorem' => 'ipsum',
+                    'dolor' => 'sit',
+                ]),
+                static function ($key, $value) {
+                    return [
+                        'key.' . $key => 'value.' . $value,
+                        'anotherKey.' . $key => 'anotherValue.' . $value,
+                    ];
+                },
+                [
+                    'key.lorem' => 'value.ipsum',
+                    'anotherKey.lorem' => 'anotherValue.ipsum',
+                    'key.dolor' => 'value.sit',
+                    'anotherKey.dolor' => 'anotherValue.sit',
+                ],
+            ],
+
+            'duplicate keys' => [
                 [
                     123 => 'foo',
                     456 => 'bar',
@@ -475,11 +556,11 @@ class MapTest extends Test
         $this->assertMap(['foo' => 'foobar', 'baz' => 'bazqux', 123 => '123456'], $applied, $map);
     }
 
-    function testShouldMap()
+    function testShouldRemap()
     {
         $map = $this->getExampleMap();
 
-        $mapped = $map->map(function ($key, $value) {
+        $mapped = $map->remap(function ($key, $value) {
             return [$key . '-2' => $value . '-2'];
         });
 
@@ -1041,7 +1122,7 @@ class MapTest extends Test
         $this->assertMap([], $map->column('key'));
         $this->assertMap([], $map->column('a', 'b'));
         $this->assertMap([], $map->filter($callback));
-        $this->assertMap([], $map->map($callback));
+        $this->assertMap([], $map->remap($callback));
         $this->assertMap([], $map->intersect(['value']));
         $this->assertMap([], $map->uintersect($callback, ['value']));
         $this->assertMap([], $map->intersectKeys(['value']));

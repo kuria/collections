@@ -526,15 +526,15 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
     /**
      * Convert the collection to a map
      *
-     * The callback should return key => value pairs for each given index and value.
+     * The callback should return a key for each given value.
      *
-     * If the same key is returned multiple times, only the first returned pair with that key will be used.
+     * If the same key is returned multiple times, only the last returned value will be used.
      *
-     * Mapper signature: ($index, $value): array
+     * Mapper signature: ($value): string|int
      */
     function map(callable $mapper): Map
     {
-        return Map::build($this->values, $mapper);
+        return Map::map($this->values, $mapper);
     }
 
     /**

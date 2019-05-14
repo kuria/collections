@@ -815,15 +815,15 @@ class CollectionTest extends Test
     {
         $c = $this->getExampleCollection();
 
-        $map = $c->map(function ($key, $value) {
-            return ['index.' . $key => 'value.' . $value];
+        $map = $c->map(function ($value) {
+            return "key.{$value}";
         });
 
         $this->assertLooselyIdentical(
             Map::create([
-                'index.0' => 'value.foo',
-                'index.1' => 'value.bar',
-                'index.2' => 'value.baz',
+                'key.foo' => 'foo',
+                'key.bar' => 'bar',
+                'key.baz' => 'baz',
             ]),
             $map
         );

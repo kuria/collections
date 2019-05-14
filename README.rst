@@ -236,6 +236,7 @@ Static methods
 --------------
 
 - ``create($pairs = null): self`` - create a map from an iterable
+- ``map($iterable, $mapper): self`` - map values of the given iterable using a callback
 - ``build($iterable, $mapper): self`` - build a map from an iterable using a callback
 - ``combine($keys, $values): self`` - combine a list of keys and a list of values to create a map
 

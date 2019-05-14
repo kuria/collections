@@ -5,12 +5,12 @@ Changelog
 *****
 
 - optimized internal collection and map instantiation
-- ``Collection`` and ``Map`` constructors are now private
-  (the static ``create()`` methods are to be used instead)
-- ``Collection::map()`` now passes both indexes and values to the mapper callback
+- ``Collection`` and ``Map`` constructors are now private (use the static ``create()`` method instead)
+- renamed ``Map::map()`` to ``Map::remap()``
 - new methods:
 
   - ``Map::create()``
+  - ``Map::map()``
   - ``Map::build()``
   - ``Map::setPairs()``
   - ``Map::apply()``

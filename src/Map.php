@@ -27,6 +27,26 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Map values of the given iterable using a callback
+     *
+     * The callback should return a key for each given value.
+     *
+     * If the same key is returned multiple times, only the last returned value will be used.
+     *
+     * Mapper signature: ($value): string|int
+     */
+    static function map(iterable $iterable, callable $mapper): self
+    {
+        $pairs = [];
+
+        foreach ($iterable as $v) {
+            $pairs[$mapper($v)] = $v;
+        }
+
+        return new static($pairs);
+    }
+
+    /**
      * Build a map from an iterable using a callback
      *
      * The callback should return key => value pairs for each given key and value.
@@ -35,7 +55,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * Mapper signature: ($key, $value): array
      */
-    static function build(iterable $iterable, callable $mapper): Map
+    static function build(iterable $iterable, callable $mapper): self
     {
         $pairs = [];
 
@@ -43,7 +63,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
             $pairs += $mapper($k, $v);
         }
 
-        return new Map($pairs);
+        return new static($pairs);
     }
 
     /**
@@ -331,7 +351,7 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @return static
      */
-    function map(callable $mapper): self
+    function remap(callable $mapper): self
     {
         $pairs = [];
 
