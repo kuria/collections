@@ -694,21 +694,25 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
         return new static($values);
     }
 
+    #[\ReturnTypeWillChange]
     function count(): int
     {
         return count($this->values);
     }
 
+    #[\ReturnTypeWillChange]
     function offsetExists($offset): bool
     {
         return key_exists($offset, $this->values);
     }
 
+    #[\ReturnTypeWillChange]
     function offsetGet($offset)
     {
         return $this->values[$offset] ?? null;
     }
 
+    #[\ReturnTypeWillChange]
     function offsetSet($offset, $value): void
     {
         if ($offset === null) {
@@ -718,11 +722,13 @@ class Collection implements \Countable, \ArrayAccess, \IteratorAggregate
         }
     }
 
+    #[\ReturnTypeWillChange]
     function offsetUnset($offset): void
     {
         $this->remove($offset);
     }
 
+    #[\ReturnTypeWillChange]
     function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->values);

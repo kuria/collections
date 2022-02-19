@@ -652,31 +652,37 @@ class Map implements \Countable, \ArrayAccess, \IteratorAggregate
         return new static($pairs);
     }
 
+    #[\ReturnTypeWillChange]
     function count(): int
     {
         return count($this->pairs);
     }
 
+    #[\ReturnTypeWillChange]
     function offsetExists($offset): bool
     {
         return key_exists($offset, $this->pairs);
     }
 
+    #[\ReturnTypeWillChange]
     function offsetGet($offset)
     {
         return $this->pairs[$offset] ?? null;
     }
 
+    #[\ReturnTypeWillChange]
     function offsetSet($offset, $value): void
     {
         $this->pairs[$offset] = $value;
     }
 
+    #[\ReturnTypeWillChange]
     function offsetUnset($offset): void
     {
         unset($this->pairs[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->pairs);
